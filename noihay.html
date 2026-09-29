@@ -1,0 +1,789 @@
+<title>Nói Hay 회화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F2F5F3; --surface:#FFFFFF; --sunk:#E8EEEB; --ink:#14201C; --muted:#5B6B65; --line:#D6E0DB;
+  --jade:#0B7A5F; --jade-ink:#FFFFFF; --jade-soft:#DDEFE8;
+  --vn:#C8324F; --en:#2A55C9;
+  --ok:#16825D; --ok-soft:#DDF2E8; --tone:#A86B12; --tone-soft:#FBEFD9; --miss:#C23B3B; --miss-soft:#FBE3E3;
+  --font:"Be Vietnam Pro","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0E1513; --surface:#16201D; --sunk:#111A17; --ink:#E4ECE8; --muted:#93A39D; --line:#27352F;
+    --jade:#3CC39C; --jade-ink:#06231A; --jade-soft:#173B31;
+    --vn:#F06A86; --en:#86A4F7;
+    --ok:#45C08D; --ok-soft:#153428; --tone:#E3A94B; --tone-soft:#3A2C12; --miss:#EF6B6B; --miss-soft:#3B1A1A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1513; --surface:#16201D; --sunk:#111A17; --ink:#E4ECE8; --muted:#93A39D; --line:#27352F;
+  --jade:#3CC39C; --jade-ink:#06231A; --jade-soft:#173B31;
+  --vn:#F06A86; --en:#86A4F7;
+  --ok:#45C08D; --ok-soft:#153428; --tone:#E3A94B; --tone-soft:#3A2C12; --miss:#EF6B6B; --miss-soft:#3B1A1A;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em}
+.brand h1 span{color:var(--jade)}
+.brand small{color:var(--muted);font-size:13px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.seg button[data-lang="vi"][aria-pressed="true"]{color:var(--vn)}
+.seg button[data-lang="en"][aria-pressed="true"]{color:var(--en)}
+
+/* scenes */
+.scenes{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+.chip .n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:var(--jade-ink)}
+.chip[aria-pressed="true"] .n{color:inherit;opacity:.8}
+
+
+.grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* phrase list */
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.item{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;align-items:start;text-align:left;border:0;background:transparent;padding:11px 14px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--sunk)}
+.item[aria-current="true"]{background:var(--jade-soft)}
+.item .t{font-weight:500;font-size:15px;overflow-wrap:anywhere}
+.item .k{font-size:13px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--line);margin-top:6px}
+.dot.tried{border-color:var(--tone)}
+.dot.done{border-color:var(--ok);background:var(--ok)}
+
+/* drill */
+.drill{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ko{font-size:16px;color:var(--muted);margin:0}
+.target{display:flex;flex-wrap:wrap;gap:6px 12px;margin:0}
+.syl{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.syl .w{font-size:32px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.syl .tn{font-size:11px;color:var(--muted);letter-spacing:.02em}
+.lang-en .syl .w{font-size:30px}
+.hint{font-size:14px;color:var(--muted);margin:0}
+.hint b{font-weight:500;color:var(--ink)}
+.gloss{display:flex;flex-direction:column;gap:8px;margin:0}
+.gloss h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.gwords{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.gw{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:6px 10px}
+.gw:hover{border-color:var(--jade)}
+.gw b{font-size:15px;font-weight:600;color:var(--vn)}
+.gw span{font-size:13px;color:var(--ink)}
+.gw.unk span{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--jade);border-color:var(--jade);color:var(--jade-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn svg{width:16px;height:16px;flex:none}
+.say{display:flex;flex-direction:column;gap:8px}
+.say label{font-size:13px;color:var(--muted)}
+.say .in{display:flex;gap:8px}
+.say input{flex:1;min-width:0;border:1px solid var(--line);background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:17px}
+.tip{font-size:12.5px;color:var(--muted);margin:0}
+kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
+
+/* result */
+.result{border-top:1px dashed var(--line);padding-top:16px;display:flex;flex-direction:column;gap:12px}
+.score{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score .num{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.score .msg{font-size:15px;font-weight:500}
+.score .ex{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.wd{display:inline-flex;flex-direction:column;align-items:center;border-radius:8px;padding:4px 9px;font-size:18px;font-weight:500}
+.wd small{font-size:11px;font-weight:400}
+.wd.ok{background:var(--ok-soft);color:var(--ok)}
+.wd.tone,.wd.vowel{background:var(--tone-soft);color:var(--tone)}
+.wd.miss{background:var(--miss-soft);color:var(--miss);text-decoration:line-through}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.coach{background:var(--sunk);border-radius:10px;padding:12px 14px;font-size:14.5px;white-space:pre-wrap;margin:0}
+
+/* tones */
+.tones{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.tones h2{margin:0;font-size:15px}
+.tones p{margin:0;font-size:13px;color:var(--muted)}
+.tgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.tgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tcell{border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent}
+.tcell:hover{background:var(--sunk)}
+.tcell .m{font-size:24px;font-weight:600}
+.tcell .nm{font-size:12px;font-weight:500}
+.tcell .ds{font-size:11px;color:var(--muted);text-align:center}
+.tcell svg{width:44px;height:26px}
+.tcell svg polyline{fill:none;stroke:var(--jade);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tcell svg line{stroke:var(--line);stroke-width:1}
+
+/* chat */
+.chat{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:780px){.chat{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.panel select{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:8px}
+.check{flex-direction:row!important;align-items:center;gap:8px!important;color:var(--ink)!important}
+.log{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:320px;max-height:62vh;overflow-y:auto}
+.msg{max-width:88%;display:flex;flex-direction:column;gap:4px}
+.msg.ai{align-self:flex-start}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.bub{border-radius:14px;padding:10px 14px;font-size:16px}
+.ai .bub{background:var(--sunk);border-top-left-radius:4px}
+.me .bub{background:var(--jade);color:var(--jade-ink);border-top-right-radius:4px}
+.bub .tr{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+.bub .spk{border:0;background:transparent;padding:0 0 0 6px;color:var(--jade);vertical-align:-2px}
+.fix{background:var(--tone-soft);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:13.5px;max-width:100%}
+.fix b{color:var(--tone);font-weight:600}
+.empty{color:var(--muted);font-size:14px;margin:auto;text-align:center;max-width:36ch}
+.sugg{display:flex;flex-wrap:wrap;gap:8px}
+.sugg button{border:1px dashed var(--jade);background:transparent;border-radius:10px;padding:6px 10px;font-size:14px;text-align:left}
+.sugg button small{display:block;color:var(--muted);font-size:12px}
+.compose{display:flex;gap:8px}
+.compose input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:16px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.warn{font-size:13px;color:var(--tone);margin:0}
+
+/* stage bar + test */
+.chip.locked{color:var(--muted);background:var(--sunk);border-style:dashed}
+.chip .ck{color:var(--ok);font-weight:700}
+.chip[aria-pressed="true"] .ck{color:inherit}
+.stage{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 16px}
+.stage p{margin:0;font-size:14px;color:var(--muted)}
+.stage p b{color:var(--ink);font-weight:600}
+.stage .pass{color:var(--ok);font-weight:600}
+.flash{color:var(--tone);font-size:13px}
+.test{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:18px;max-width:720px;width:100%;margin-inline:auto}
+.tbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--jade)}
+.q{font-size:22px;font-weight:600;margin:0;line-height:1.35}
+.qk{font-size:13px;color:var(--muted);margin:0;letter-spacing:.04em}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--sunk);border-radius:10px;padding:12px 14px;font-size:16px}
+.opt:hover:not(:disabled){border-color:var(--jade)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opt.wrong{background:var(--miss-soft);border-color:var(--miss);color:var(--miss);text-decoration:line-through}
+.big{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.review{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.review li{background:var(--sunk);border-radius:8px;padding:8px 12px;font-size:14px}
+.review li small{display:block;color:var(--muted)}
+
+/* 글자 크기 (아이패드 = 기본 '크게') */
+.seg.size button{padding:6px 11px;line-height:1}
+.seg.size button[data-size="m"]{font-size:13px}
+.seg.size button[data-size="l"]{font-size:16px}
+.seg.size button[data-size="xl"]{font-size:19px}
+html{-webkit-text-size-adjust:100%}
+button,.chip,.item,.gw,.tcell,.opt{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html[data-size="l"] .wrap{zoom:1.25;max-width:1060px}
+html[data-size="xl"] .wrap{zoom:1.45;max-width:940px}
+html[data-size="l"] .log{max-height:48vh}
+html[data-size="xl"] .log{max-height:40vh}
+@media (max-width:1100px){
+  html[data-size="l"] .grid,html[data-size="l"] .chat{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:1300px){
+  html[data-size="xl"] .grid,html[data-size="xl"] .chat{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  html[data-size="l"] .tgrid,html[data-size="xl"] .tgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* 한 줄로 쌓였을 때 표현 목록은 가로 스크롤 대신 높이 제한 */
+@media (max-width:1300px){
+  html[data-size="l"] .list,html[data-size="xl"] .list{max-height:34vh;overflow-y:auto}
+}
+</style>
+<script>
+(function(){
+  var s=null;
+  try{ s=localStorage.getItem("noihay.size"); }catch(e){}
+  if(!s){ s=(window.matchMedia&&matchMedia("(pointer:coarse) and (min-width:700px)").matches)?"l":"m"; }
+  document.documentElement.setAttribute("data-size",s);
+})();
+</script>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Nói <span>Hay</span></h1>
+      <small>베트남어 · 영어 생활 회화</small>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="학습 언어">
+        <button id="lang-vi" data-lang="vi" aria-pressed="true">Tiếng Việt</button>
+        <button id="lang-en" data-lang="en" aria-pressed="false">English</button>
+      </div>
+      <div class="seg" role="group" aria-label="모드">
+        <button id="tab-drill" data-tab="drill" aria-pressed="true">표현 연습</button>
+        <button id="tab-chat" data-tab="chat" aria-pressed="false">AI 회화</button>
+      </div>
+      <div class="seg size" role="group" aria-label="글자 크기">
+        <button id="size-m" data-size="m" aria-pressed="false" aria-label="글자 보통">가</button>
+        <button id="size-l" data-size="l" aria-pressed="false" aria-label="글자 크게">가</button>
+        <button id="size-xl" data-size="xl" aria-pressed="false" aria-label="글자 아주 크게">가</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DRILL -->
+  <section id="view-drill" style="display:flex;flex-direction:column;gap:16px">
+    <div class="scenes" id="scenes"></div>
+    <div class="stage" id="stage">
+      <p id="stage-txt"></p>
+      <div class="row"><span class="flash" id="stage-flash" hidden></span><button class="btn primary" id="b-test">이 단계 시험 보기</button></div>
+    </div>
+    <div class="test" id="test" hidden></div>
+    <div class="grid" id="grid">
+      <nav class="list" id="list" aria-label="표현 목록"></nav>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <article class="drill" id="drill">
+          <div class="eyebrow"><span id="d-pos"></span><span id="d-voice"></span></div>
+          <p class="ko" id="d-ko"></p>
+          <p class="target" id="d-target"></p>
+          <p class="hint" id="d-hint"></p>
+          <div class="gloss" id="d-gloss"><h3>단어 풀이 · 누르면 발음</h3><div class="gwords" id="d-gwords"></div></div>
+          <div class="row">
+            <button class="btn primary" id="b-play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>듣기</button>
+            <button class="btn" id="b-slow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>천천히</button>
+            <button class="btn" id="b-prev" aria-label="이전 표현">‹ 이전</button>
+            <button class="btn" id="b-next" aria-label="다음 표현">다음 ›</button>
+          </div>
+        </article>
+
+        <aside class="tones" id="tones">
+          <h2>여섯 성조 (북부 표준)</h2>
+          <p>같은 'ma'도 음높이에 따라 뜻이 달라집니다. 칸을 누르면 들어볼 수 있어요.</p>
+          <div class="tgrid" id="tgrid"></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section id="view-chat" hidden>
+    <div class="chat">
+      <div class="panel">
+        <label for="c-scene">상황<select id="c-scene"></select></label>
+        <label for="c-level">수준<select id="c-level"><option value="beginner">초급 — 짧고 쉬운 문장</option><option value="intermediate">중급 — 자연스러운 속도</option></select></label>
+        <label class="check"><input type="checkbox" id="c-auto" checked> 답변 자동으로 읽어주기</label>
+        <button class="btn primary" id="c-start">새 대화 시작</button>
+        <p class="note">Claude가 상대역을 맡고, 내 문장이 어색하면 고쳐 줍니다. 대화마다 내 Claude 사용량이 쓰입니다.</p>
+        <p class="warn" id="c-unavail" hidden>이 화면에서는 Claude를 부를 수 없습니다. claude.ai에 로그인한 상태로 열면 AI 회화가 켜집니다.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="log" id="c-log" aria-live="polite"><p class="empty" id="c-empty">상황을 고르고 <b>새 대화 시작</b>을 누르면 Claude가 먼저 말을 겁니다.</p></div>
+        <div class="sugg" id="c-sugg"></div>
+        <form class="compose" id="c-form">
+          <input id="c-in" autocomplete="off" spellcheck="false" placeholder="답장을 말하거나 입력하세요">
+          <button class="btn primary" id="c-send" type="submit">보내기</button>
+          <button class="btn" id="c-stop" type="button" hidden>중지</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- content ---------- */
+const SCENES = [
+ {id:"greet", ko:"인사·자기소개", role:{vi:"a friendly new Vietnamese coworker meeting the learner for the first time", en:"a friendly new coworker meeting the learner for the first time"}, items:[
+  ["안녕하세요.","Xin chào.","씬 짜오","Hello."],
+  ["만나서 반가워요.","Rất vui được gặp bạn.","젓 부이 드억 갑 반","Nice to meet you."],
+  ["저는 한국 사람이에요.","Tôi là người Hàn Quốc.","또이 라 응어이 한 꾸옥","I'm Korean."],
+  ["잘 지내요?","Bạn có khỏe không?","반 꼬 퀘 콩","How are you doing?"],
+  ["잘 지내요, 고마워요.","Tôi khỏe, cảm ơn.","또이 퀘, 깜 언","I'm good, thanks."],
+  ["다음에 또 봐요.","Hẹn gặp lại.","헨 갑 라이","See you next time."]]},
+ {id:"food", ko:"식당", role:{vi:"a server at a busy phở restaurant in Hanoi", en:"a server at a casual restaurant"}, items:[
+  ["메뉴판 좀 보여 주세요.","Cho tôi xem thực đơn.","쪼 또이 쌤 특 던","Can I see the menu, please?"],
+  ["이거 하나 주세요.","Cho tôi một cái này.","쪼 또이 못 까이 나이","I'll have one of these, please."],
+  ["고수는 빼 주세요.","Không cho rau mùi nhé.","콩 쪼 자우 무이 녜","No cilantro, please."],
+  ["정말 맛있어요.","Ngon quá.","응온 꽈","This is really good."],
+  ["물 한 병 주세요.","Cho tôi một chai nước.","쪼 또이 못 짜이 느억","A bottle of water, please."],
+  ["계산해 주세요.","Tính tiền cho tôi.","띤 띠엔 쪼 또이","Can I get the check, please?"]]},
+ {id:"cafe", ko:"카페", role:{vi:"a barista at a Vietnamese coffee shop", en:"a barista at a coffee shop"}, items:[
+  ["아이스 커피 한 잔 주세요.","Cho tôi một ly cà phê đá.","쪼 또이 못 리 까 페 다","One iced coffee, please."],
+  ["연유 아이스 커피 주세요.","Cho tôi cà phê sữa đá.","쪼 또이 까 페 스어 다","An iced coffee with condensed milk, please."],
+  ["설탕은 조금만 넣어 주세요.","Ít đường thôi nhé.","잇 드엉 토이 녜","Just a little sugar, please."],
+  ["가져갈게요.","Mang đi nhé.","망 디 녜","To go, please."],
+  ["와이파이 비밀번호가 뭐예요?","Mật khẩu wifi là gì?","멋 커우 와이파이 라 지","What's the Wi-Fi password?"]]},
+ {id:"move", ko:"택시·길 찾기", role:{vi:"a Grab motorbike or taxi driver", en:"a taxi driver"}, items:[
+  ["이 주소로 가 주세요.","Cho tôi đến địa chỉ này.","쪼 또이 덴 디어 찌 나이","Please take me to this address."],
+  ["얼마나 걸려요?","Mất bao lâu?","멋 바오 러우","How long will it take?"],
+  ["천천히 가 주세요.","Đi chậm thôi nhé.","디 쩜 토이 녜","Please drive slowly."],
+  ["오른쪽으로 가세요.","Rẽ phải.","재 파이","Turn right."],
+  ["여기서 세워 주세요.","Dừng ở đây nhé.","증 어 더이 녜","Please stop here."],
+  ["화장실이 어디예요?","Nhà vệ sinh ở đâu?","냐 베 신 어 더우","Where's the restroom?"]]},
+ {id:"shop", ko:"쇼핑·흥정", role:{vi:"a vendor at Bến Thành market who likes to bargain", en:"a shop clerk at a clothing store"}, items:[
+  ["이거 얼마예요?","Cái này bao nhiêu tiền?","까이 나이 바오 니에우 띠엔","How much is this?"],
+  ["너무 비싸요.","Đắt quá.","닷 꽈","That's too expensive."],
+  ["좀 깎아 주세요.","Bớt cho tôi một chút nhé.","벗 쪼 또이 못 쭛 녜","Could you give me a little discount?"],
+  ["입어 봐도 돼요?","Tôi mặc thử được không?","또이 막 트 드억 콩","Can I try this on?"],
+  ["카드로 계산돼요?","Trả bằng thẻ được không?","짜 방 테 드억 콩","Can I pay by card?"],
+  ["그냥 구경하는 중이에요.","Tôi chỉ xem thôi.","또이 찌 쌤 토이","I'm just looking."]]},
+ {id:"work", ko:"회사·업무", role:{vi:"a Vietnamese coworker on the learner's project team", en:"a coworker on the learner's project team"}, items:[
+  ["회의 몇 시에 시작해요?","Mấy giờ bắt đầu họp?","머이 저 밧 더우 헙","What time does the meeting start?"],
+  ["다시 한 번 말해 줄래요?","Bạn nói lại được không?","반 노이 라이 드억 콩","Could you say that again?"],
+  ["조금 천천히 말해 줄래요?","Nói chậm một chút được không?","노이 쩜 못 쭛 드억 콩","Could you speak a little slower?"],
+  ["이해했어요.","Tôi hiểu rồi.","또이 히에우 조이","Got it."],
+  ["오늘 수고 많았어요.","Hôm nay vất vả rồi.","홈 나이 벗 바 조이","Thanks for all your hard work today."],
+  ["내일 이어서 얘기해요.","Mai mình nói tiếp nhé.","마이 민 노이 띠엡 녜","Let's pick this up tomorrow."]]},
+ {id:"health", ko:"병원·약국", role:{vi:"a pharmacist at a neighborhood pharmacy", en:"a pharmacist at a neighborhood pharmacy"}, items:[
+  ["머리가 아파요.","Tôi bị đau đầu.","또이 비 다우 더우","I have a headache."],
+  ["배가 아파요.","Tôi bị đau bụng.","또이 비 다우 붕","I have a stomachache."],
+  ["열이 나요.","Tôi bị sốt.","또이 비 솟","I have a fever."],
+  ["이 약은 하루에 몇 번 먹어요?","Thuốc này uống mấy lần một ngày?","투옥 나이 우옹 머이 런 못 응아이","How many times a day do I take this?"],
+  ["가까운 병원이 어디예요?","Bệnh viện gần nhất ở đâu?","벤 비엔 건 녓 어 더우","Where's the nearest hospital?"]]},
+ {id:"call", ko:"전화·약속", role:{vi:"a Vietnamese friend calling to make plans", en:"a friend calling to make plans"}, items:[
+  ["여보세요.","A lô.","아 로","Hello? (전화 받을 때)"],
+  ["지금 어디예요?","Bạn đang ở đâu?","반 당 어 더우","Where are you right now?"],
+  ["10분 뒤에 도착해요.","Mười phút nữa tôi đến.","므어이 풋 느어 또이 덴","I'll be there in ten minutes."],
+  ["조금 늦을 것 같아요.","Tôi sẽ đến muộn một chút.","또이 쌔 덴 무온 못 쭛","I'm going to be a little late."],
+  ["내일 시간 있어요?","Ngày mai bạn có rảnh không?","응아이 마이 반 꼬 자인 콩","Are you free tomorrow?"]]}
+];
+const TONES = [
+ {k:"ngang", m:"a", ko:"평평하게", pts:[[4,3],[40,3]]},
+ {k:"huyền", m:"à", ko:"낮게 내려감", pts:[[4,2.2],[40,1.2]]},
+ {k:"sắc", m:"á", ko:"높이 올라감", pts:[[4,3],[40,5]]},
+ {k:"hỏi", m:"ả", ko:"내려갔다 올라옴", pts:[[4,3],[22,1],[40,2.2]]},
+ {k:"ngã", m:"ã", ko:"꺾이며 치솟음", pts:[[4,3],[16,2.4]], pts2:[[22,3],[40,5]]},
+ {k:"nặng", m:"ạ", ko:"짧고 무겁게 뚝", pts:[[4,2.2],[22,1]]}
+];
+/* Vietnamese glossary: multi-syllable entries are matched first (longest match) */
+const GLOSS = {
+ "xin chào":"안녕하세요 (인사말)", "rất":"매우, 아주", "vui":"기쁜, 즐거운", "được":"~하게 되다 (좋은 일)", "gặp":"만나다",
+ "bạn":"너, 당신 (친구·또래에게)", "tôi":"나, 저", "là":"~이다", "người":"사람", "hàn quốc":"한국",
+ "có":"있다 · 'có … không?' 의문문의 앞부분", "khỏe":"건강한, 잘 지내는", "cảm ơn":"고맙다", "hẹn":"약속하다", "gặp lại":"다시 만나다",
+ "cho":"주다, ~에게 (주문할 때 'Cho tôi…' = …주세요)", "xem":"보다", "thực đơn":"메뉴", "một":"하나, 1", "cái":"개 (물건을 세는 말)",
+ "này":"이, 이것", "rau mùi":"고수 (향채)", "nhé":"~요, ~해 줘요 (부드러운 어미)", "ngon":"맛있다", "quá":"너무, 정말",
+ "chai":"병", "nước":"물", "tính tiền":"계산하다 (tính 계산 + tiền 돈)", "tiền":"돈", "ly":"잔, 컵", "cà phê":"커피",
+ "đá":"얼음 (음료에서는 '아이스')", "sữa":"우유 (카페에서는 연유)", "ít":"적은, 조금", "đường":"설탕 (다른 뜻: 길)", "thôi":"~만, ~뿐",
+ "mang đi":"가져가다, 포장", "mật khẩu":"비밀번호", "wifi":"와이파이", "gì":"무엇", "đến":"도착하다, ~로 가다",
+ "địa chỉ":"주소", "mất":"(시간이) 걸리다", "bao lâu":"얼마나 오래", "đi":"가다", "chậm":"느린, 천천히",
+ "rẽ":"(방향을) 꺾다, 돌다", "phải":"오른쪽 (다른 뜻: ~해야 한다)", "trái":"왼쪽", "dừng":"멈추다, 세우다", "ở":"~에(서), 있다",
+ "đây":"여기", "nhà vệ sinh":"화장실", "đâu":"어디", "bao nhiêu":"얼마, 몇", "đắt":"비싼",
+ "bớt":"깎다, 줄이다", "một chút":"조금", "mặc":"입다", "thử":"시험 삼아 해 보다", "được không":"~해도 돼요? / ~할 수 있어요?",
+ "trả":"지불하다, 내다", "bằng":"~로 (수단)", "thẻ":"카드", "chỉ":"단지, 오직", "mấy giờ":"몇 시",
+ "mấy":"몇", "bắt đầu":"시작하다", "họp":"회의하다", "nói":"말하다", "lại":"다시",
+ "hiểu":"이해하다", "rồi":"이미, ~했다 (완료)", "hôm nay":"오늘", "vất vả":"고생하다, 힘들다", "mai":"내일 (ngày mai의 줄임)",
+ "mình":"우리 (친근한 말투)", "tiếp":"계속, 이어서", "bị":"(안 좋은 일을) 겪다, 당하다", "đau":"아프다", "đầu":"머리",
+ "bụng":"배", "sốt":"열이 나다", "thuốc":"약", "uống":"마시다, (약을) 먹다", "lần":"번, 회",
+ "ngày":"날, 하루", "bệnh viện":"병원", "gần nhất":"가장 가까운 (gần 가까운 + nhất 가장)", "a lô":"여보세요 (전화)", "đang":"~하는 중",
+ "mười":"10, 열", "phút":"분", "nữa":"더 (시간 뒤에: ~후에)", "sẽ":"~할 것이다 (미래)", "muộn":"늦은",
+ "ngày mai":"내일", "rảnh":"한가한, 시간이 있는"
+};
+/* English glossary: words and set phrases; words not listed (a, the, is…) are left out */
+const GLOSS_EN = {
+ "hello":"안녕하세요 / (전화) 여보세요", "nice to meet you":"만나서 반가워요 (첫 만남 인사)", "i'm":"I am의 줄임 — 저는 ~이에요",
+ "korean":"한국인, 한국의", "how are you doing":"잘 지내요? (How are you보다 편한 말투)", "good":"좋은, 잘 지내는",
+ "thanks":"고마워요 (thank you보다 가벼움)", "see you":"또 봐요 (헤어질 때)", "next time":"다음번에",
+ "can i":"~해도 될까요? (허락·부탁)", "see":"보다", "menu":"메뉴판", "please":"~주세요 (정중하게)",
+ "i'll have":"~로 할게요 (주문할 때)", "one of these":"이것 중 하나", "no cilantro":"고수 빼고 (no + 음식 = ~빼 주세요)",
+ "this is":"이것은 ~이다", "really":"정말", "a bottle of":"~한 병", "water":"물",
+ "can i get":"~주시겠어요? (주문·요청)", "the check":"계산서 (영국식: the bill)", "one":"하나",
+ "iced coffee":"아이스 커피", "with":"~을 넣은, ~와 함께", "condensed milk":"연유", "just a little":"아주 조금만",
+ "sugar":"설탕", "to go":"포장이요 (매장에서 먹을 때: for here)", "what's":"What is의 줄임 — ~은 뭐예요?",
+ "wi fi":"와이파이", "password":"비밀번호", "take me to":"~로 데려다 주세요", "this address":"이 주소",
+ "how long":"얼마나 오래", "will it take":"(시간이) 걸릴까요?", "drive":"운전하다", "slowly":"천천히",
+ "turn right":"오른쪽으로 돌다 (왼쪽: turn left)", "stop":"멈추다, 세우다", "here":"여기",
+ "where's":"Where is의 줄임 — ~은 어디예요?", "restroom":"화장실 (공공장소; 집 화장실은 bathroom)",
+ "how much is":"~은 얼마예요?", "this":"이것", "that's":"That is의 줄임 — 그건 ~예요", "too expensive":"너무 비싼 (too = 지나치게)",
+ "could you":"~해 주실래요? (can you보다 공손)", "give me":"저에게 주다", "a little":"조금", "discount":"할인",
+ "try this on":"(옷을) 입어 보다 — try와 on 사이에 목적어", "pay by card":"카드로 계산하다 (현금: pay in cash)",
+ "i'm just looking":"그냥 구경하는 중이에요 (점원에게 하는 말)", "what time":"몇 시에", "the meeting":"그 회의",
+ "start":"시작하다", "say that again":"다시 한 번 말하다", "speak":"말하다", "slower":"더 천천히 (slow의 비교급)",
+ "got it":"알겠어요, 이해했어요 (구어)", "thanks for":"~에 대해 고마워요", "all your hard work":"당신의 모든 수고 (hard work = 노고)",
+ "today":"오늘", "let's":"Let us의 줄임 — ~합시다", "pick this up":"(멈춘 일을) 다시 이어서 하다 — pick와 up 사이에 목적어",
+ "tomorrow":"내일", "i have a":"~이 있어요 (증상 앞에 쓰면 '~가 아파요')", "headache":"두통 (head 머리 + ache 아픔)",
+ "stomachache":"복통 (stomach 배 + ache 아픔)", "fever":"열", "how many times":"몇 번", "a day":"하루에",
+ "take":"(약을) 먹다 — 약은 eat이 아니라 take", "the nearest":"가장 가까운 (near의 최상급)", "hospital":"병원",
+ "where are you":"어디예요? (어디 있어요?)", "right now":"지금 바로", "i'll be there":"그쪽에 도착할게요",
+ "in ten minutes":"10분 후에 (in + 시간 = ~후에)", "i'm going to":"~할 거예요, ~할 것 같아요 (예정)", "late":"늦은",
+ "are you free":"시간 있어요? (free = 한가한 / 무료의)"
+};
+function glossWords(sentence, lang="vi"){
+  const w = tokens(sentence), out = [], dict = lang==="vi" ? GLOSS : GLOSS_EN, maxN = lang==="vi" ? 3 : 5;
+  for(let i=0;i<w.length;){
+    let hit = null;
+    for(let n=maxN;n>=1 && !hit;n--){ const k = w.slice(i,i+n).join(" "); if(i+n<=w.length && dict[k]) hit = [k,n]; }
+    if(hit){
+      out.push([hit[0], dict[hit[0]]]); i += hit[1];
+    } else if(lang==="en"){ i++;
+    } else if(w[i]==="không"){
+      out.push(["không", i===w.length-1 ? "문장 끝: ~인가요? (의문)" : "아니다, ~하지 않다"]); i++;
+    } else { out.push([w[i], ""]); i++; }
+  }
+  return out;
+}
+const TONE_MARK = {"̀":"huyền","́":"sắc","̃":"ngã","̉":"hỏi","̣":"nặng"};
+const LANGNAME = {vi:"Vietnamese", en:"English"};
+
+/* ---------- state ---------- */
+const S = {lang:"vi", tab:"drill", scene:0, idx:0, cleared:{vi:{}, en:{}}};
+const PASS = 80;
+const store = {
+  get(){ try{ return JSON.parse(localStorage.getItem("noihay.v1")||"null"); }catch(e){ return null; } },
+  set(v){ try{ localStorage.setItem("noihay.v1", JSON.stringify(v)); }catch(e){} }
+};
+(function load(){
+  const d = store.get();
+  if(d) Object.assign(S, {lang:d.lang||"vi", scene:d.scene||0, idx:d.idx||0});
+  if(d && d.cleared) S.cleared = {vi:d.cleared.vi||{}, en:d.cleared.en||{}};
+  if(!SCENES[S.scene]) S.scene = 0;
+  if(!SCENES[S.scene].items[S.idx]) S.idx = 0;
+})();
+function save(){ store.set({lang:S.lang, scene:S.scene, idx:S.idx, cleared:S.cleared}); }
+/* stage si is open once the stage before it has a passing test in this language */
+const bestOf = si => S.cleared[S.lang][SCENES[si].id] || 0;
+const passed = si => bestOf(si) >= PASS;
+const unlocked = si => si===0 || passed(si-1);
+const lastOpen = () => { let i=0; while(i+1<SCENES.length && unlocked(i+1)) i++; return i; };
+
+const $ = id => document.getElementById(id);
+const el = (tag, attrs={}, ...kids) => { const e=document.createElement(tag); for(const[k,v] of Object.entries(attrs)){ if(k==="class") e.className=v; else if(k.startsWith("on")) e.addEventListener(k.slice(2),v); else e.setAttribute(k,v);} for(const c of kids){ if(c!=null) e.append(c);} return e; };
+function paintSize(){ const s=document.documentElement.getAttribute("data-size"); document.querySelectorAll(".seg.size button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.size===s))); }
+document.querySelectorAll(".seg.size button").forEach(b=>b.addEventListener("click",()=>{
+  document.documentElement.setAttribute("data-size", b.dataset.size);
+  try{ localStorage.setItem("noihay.size", b.dataset.size); }catch(e){}
+  paintSize();
+}));
+paintSize();
+const cur = () => SCENES[S.scene].items[S.idx];
+const pid = (si, i) => S.lang + ":" + SCENES[si].id + ":" + i;
+const textOf = it => S.lang==="vi" ? it[1] : it[3];
+
+/* ---------- text analysis ---------- */
+function tokens(s){
+  return s.normalize("NFC").toLowerCase().replace(/[’‘]/g,"'").replace(/\(.*?\)/g," ")
+    .replace(/[.,!?;:"“”…¿¡\-–—\/]/g," ").split(/\s+/).map(w=>w.replace(/^'+|'+$/g,"")).filter(Boolean);
+}
+function toneOf(w){ for(const ch of w.normalize("NFD")) if(TONE_MARK[ch]) return TONE_MARK[ch]; return "ngang"; }
+
+/* ---------- speech ---------- */
+const TTS = { voices:[], ok: "speechSynthesis" in window };
+function loadVoices(){ if(!TTS.ok) return; TTS.voices = speechSynthesis.getVoices(); renderVoice(); }
+if(TTS.ok){ loadVoices(); speechSynthesis.addEventListener?.("voiceschanged", loadVoices); }
+function pickVoice(lang){
+  const vs = TTS.voices.filter(v=>v.lang && v.lang.toLowerCase().startsWith(lang));
+  if(lang==="en"){ return vs.find(v=>/en-US/i.test(v.lang) && /natural|online|google/i.test(v.name)) || vs.find(v=>/en-US/i.test(v.lang)) || vs[0]; }
+  return vs.find(v=>/natural|online|google/i.test(v.name)) || vs[0];
+}
+function speak(text, lang, rate=1){
+  if(!TTS.ok) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/\(.*?\)/g,""));
+  const v = pickVoice(lang); if(v) u.voice = v;
+  u.lang = lang==="vi" ? "vi-VN" : "en-US"; u.rate = rate;
+  speechSynthesis.speak(u);
+}
+function renderVoice(){
+  const v = pickVoice(S.lang);
+  $("d-voice").textContent = !TTS.ok ? "음성 재생 불가" : v ? "음성 · " + v.name.replace(/^Microsoft\s+/,"").replace(/\s*-.*$/,"") : (TTS.voices.length ? (S.lang==="vi"?"베트남어 음성 없음":"영어 음성 없음") : "");
+}
+
+/* ---------- drill render ---------- */
+function renderScenes(){
+  const box = $("scenes"); box.replaceChildren();
+  SCENES.forEach((sc,si)=>{
+    const open = unlocked(si);
+    box.append(el("button",{class:"chip"+(open?"":" locked"),"aria-pressed":String(si===S.scene), id:"scene-"+sc.id,
+      title: open ? "" : "앞 단계 시험을 통과하면 열립니다",
+      onclick:()=>{
+        if(!open){ flash((si)+"단계 '"+SCENES[si-1].ko+"' 시험을 통과하면 열립니다."); return; }
+        S.scene=si;S.idx=0;save();closeTest();renderDrill();
+      }},
+      el("span",{class:"n"}, (si+1)+"단계"), sc.ko,
+      passed(si) ? el("span",{class:"ck","aria-label":"통과"},"✓") : open ? null : el("span",{class:"n"},"잠김")));
+  });
+}
+function renderStage(){
+  const si = S.scene, sc = SCENES[si], b = bestOf(si);
+  const txt = $("stage-txt"); txt.replaceChildren(el("b",{}, (si+1)+"단계 · "+sc.ko), "  ");
+  if(passed(si)) txt.append(el("span",{class:"pass"}, "통과 ("+b+"점)"), si+1<SCENES.length ? " — 다음 단계가 열렸어요." : " — 마지막 단계까지 끝냈어요!");
+  else txt.append(b ? "최고 "+b+"점 · " : "", "표현 "+sc.items.length+"개를 공부한 뒤 시험에서 "+PASS+"점 이상이면 다음 단계가 열립니다.");
+  $("b-test").textContent = passed(si) ? "시험 다시 보기" : "이 단계 시험 보기";
+}
+let flashT;
+function flash(msg){ const f=$("stage-flash"); f.textContent=msg; f.hidden=false; clearTimeout(flashT); flashT=setTimeout(()=>f.hidden=true, 3500); }
+function renderList(){
+  const box = $("list"); box.replaceChildren();
+  SCENES[S.scene].items.forEach((it,i)=>{
+    box.append(el("button",{class:"item","aria-current":String(i===S.idx), onclick:()=>{S.idx=i;save();renderDrill();}},
+      el("span",{class:"dot"+(i===S.idx?" done":"")}),
+      el("span",{}, el("span",{class:"t"}, textOf(it)), el("br"), el("span",{class:"k"}, it[0]))));
+  });
+}
+function renderCard(){
+  const it = cur(), sc = SCENES[S.scene], vi = S.lang==="vi";
+  $("drill").classList.toggle("lang-en", !vi);
+  $("d-pos").textContent = sc.ko + " · " + (S.idx+1) + " / " + sc.items.length;
+  $("d-ko").textContent = it[0];
+  const tg = $("d-target"); tg.replaceChildren();
+  const raw = textOf(it);
+  if(vi){
+    raw.split(/\s+/).forEach(w=>{
+      const t = toneOf(w.replace(/[.,!?]/g,""));
+      tg.append(el("span",{class:"syl"}, el("span",{class:"w"}, w), el("span",{class:"tn"}, t)));
+    });
+    $("d-hint").replaceChildren("한글 발음(근사치) ", el("b",{}, it[2]));
+  } else {
+    tg.append(el("span",{class:"syl"}, el("span",{class:"w", style:"align-self:flex-start"}, raw)));
+    $("d-hint").textContent = "";
+  }
+  $("d-hint").hidden = !vi;
+  const gw = $("d-gwords"); gw.replaceChildren();
+  glossWords(raw, S.lang).forEach(([w,m])=>gw.append(
+    el("button",{class:"gw"+(m?"":" unk"), type:"button", title:"발음 듣기", onclick:()=>speak(w.replace(/^wi fi$/,"Wi-Fi"),S.lang,.8)}, el("b",{}, w), el("span",{}, m||"—"))));
+  $("d-gloss").hidden = !gw.children.length;
+  $("tones").hidden = !vi;
+  $("b-prev").disabled = S.idx===0 && S.scene===0;
+  const atEnd = S.idx===sc.items.length-1;
+  $("b-next").textContent = atEnd && !passed(S.scene) ? "시험 보기 ›" : "다음 ›";
+  renderVoice();
+}
+function renderDrill(){ renderScenes(); renderStage(); renderList(); renderCard(); }
+function move(d){
+  let si=S.scene, i=S.idx+d;
+  if(i<0){ if(si===0) return; si--; i=SCENES[si].items.length-1; }
+  if(i>=SCENES[si].items.length){
+    if(!passed(si) || si+1>=SCENES.length){ startTest(); return; }
+    si++; i=0;
+  }
+  S.scene=si; S.idx=i; save(); renderDrill();
+}
+
+/* ---------- stage test ---------- */
+const T = { qs:[], n:0, right:0, wrong:[], answered:false };
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function pickOthers(pool, answer, k=3){ return shuffle([...new Set(pool.filter(x=>x!==answer))]).slice(0,k); }
+function buildTest(si){
+  const items = SCENES[si].items, lang = S.lang;
+  const targets = items.map(textOf), kos = items.map(it=>it[0]);
+  const allTargets = SCENES.flatMap(s=>s.items.map(textOf));
+  const qs = [];
+  const kinds = shuffle(["meaning","sentence","listen","meaning","sentence","listen"]);
+  shuffle(items.map((_,i)=>i)).forEach((i,n)=>{
+    const kind = kinds[n % kinds.length];
+    if(kind==="meaning") qs.push({kind, label:"뜻 고르기", prompt:targets[i], speakText:targets[i], answer:kos[i], opts:shuffle([kos[i], ...pickOthers(kos, kos[i])])});
+    else if(kind==="sentence") qs.push({kind, label:"알맞은 문장 고르기", prompt:kos[i], answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets.length>=4?targets:allTargets, targets[i])])});
+    else qs.push({kind, label:"듣고 고르기", prompt:"🔊 들리는 문장을 고르세요", speakText:targets[i], answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets, targets[i])])});
+  });
+  /* two word / phrase questions from the stage's glossary */
+  const dict = new Map();
+  targets.forEach(t=>glossWords(t, lang).forEach(([w,m])=>{ if(m) dict.set(w,m); }));
+  const words = shuffle([...dict.keys()]);
+  const means = [...new Set(dict.values())];
+  words.slice(0,2).forEach(w=>{
+    const m = dict.get(w);
+    qs.push({kind:"word", label:"단어·표현 뜻", prompt:w, speakText:w, answer:m, opts:shuffle([m, ...pickOthers(means, m)])});
+  });
+  return shuffle(qs);
+}
+function startTest(){
+  T.qs = buildTest(S.scene); T.n = 0; T.right = 0; T.wrong = [];
+  $("grid").hidden = true; $("stage").hidden = true; $("test").hidden = false;
+  renderQ();
+  $("test").scrollIntoView({block:"start", behavior:"smooth"});
+}
+function closeTest(){ $("test").hidden = true; $("grid").hidden = false; $("stage").hidden = false; }
+function renderQ(){
+  const q = T.qs[T.n], box = $("test"); T.answered = false;
+  const say = q.speakText ? el("button",{class:"btn", type:"button", onclick:()=>speak(q.speakText, S.lang, q.kind==="listen"?.9:.85)}, "🔊 듣기") : null;
+  const next = el("button",{class:"btn primary", id:"t-next", type:"button", onclick:()=>{ T.n++; T.n<T.qs.length ? renderQ() : renderResult(); }}, T.n+1<T.qs.length ? "다음 문제 ›" : "결과 보기 ›");
+  next.hidden = true;
+  const opts = el("div",{class:"opts"});
+  q.opts.forEach(o=>{
+    opts.append(el("button",{class:"opt", type:"button", onclick:(e)=>{
+      if(T.answered) return; T.answered = true;
+      const ok = o===q.answer; if(ok) T.right++; else T.wrong.push(q);
+      [...opts.children].forEach(b=>{ b.disabled = true; if(b.textContent===q.answer) b.classList.add("right"); });
+      if(!ok) e.currentTarget.classList.add("wrong");
+      if(q.kind==="sentence" || q.kind==="listen") speak(q.answer, S.lang, .9);
+      next.hidden = false; next.focus();
+    }}, o));
+  });
+  box.replaceChildren(
+    el("div",{class:"eyebrow"}, el("span",{}, (S.scene+1)+"단계 시험 · "+SCENES[S.scene].ko), el("span",{}, (T.n+1)+" / "+T.qs.length)),
+    el("div",{class:"tbar"}, el("i",{style:"width:"+(T.n/T.qs.length*100)+"%"})),
+    el("p",{class:"qk"}, q.label),
+    q.kind==="listen" ? el("div",{class:"row"}, say) : el("p",{class:"q"}, q.prompt),
+    q.kind!=="listen" && say ? el("div",{class:"row"}, say) : null,
+    opts,
+    el("div",{class:"row"}, next, el("button",{class:"btn", type:"button", onclick:()=>{ closeTest(); renderDrill(); }}, "그만두기"))
+  );
+  if(q.kind==="listen") speak(q.speakText, S.lang, .9);
+}
+function renderResult(){
+  const score = Math.round(T.right / T.qs.length * 100), si = S.scene, ok = score >= PASS;
+  const was = bestOf(si);
+  S.cleared[S.lang][SCENES[si].id] = Math.max(was, score); save();
+  const hasNext = si+1 < SCENES.length;
+  const box = $("test");
+  const review = T.wrong.length ? el("ul",{class:"review"}, ...T.wrong.map(q=>el("li",{}, q.kind==="listen" ? "듣기 문제" : q.prompt, el("small",{}, "정답: "+q.answer)))) : null;
+  box.replaceChildren(
+    el("div",{class:"eyebrow"}, el("span",{}, (si+1)+"단계 시험 결과 · "+SCENES[si].ko), el("span",{}, "통과 기준 "+PASS+"점")),
+    el("div",{class:"row"}, el("span",{class:"big", style:"color:var(--"+(ok?"ok":"miss")+")"}, String(score)), el("span",{style:"font-size:16px;font-weight:600"},
+      ok ? (hasNext ? "통과! "+(si+2)+"단계 '"+SCENES[si+1].ko+"'가 열렸어요." : "통과! 모든 단계를 마쳤어요.") : "아쉬워요. "+PASS+"점 이상이면 통과예요.")),
+    el("p",{class:"note"}, T.qs.length+"문제 중 "+T.right+"개 정답"),
+    review ? el("p",{class:"qk"}, "틀린 문제") : null, review,
+    el("div",{class:"row"},
+      ok && hasNext ? el("button",{class:"btn primary", type:"button", onclick:()=>{ S.scene=si+1; S.idx=0; save(); closeTest(); renderDrill(); }}, "다음 단계로 ›") : null,
+      el("button",{class:"btn"+(ok?"":" primary"), type:"button", onclick:startTest}, "다시 시험 보기"),
+      el("button",{class:"btn", type:"button", onclick:()=>{ S.idx=0; save(); closeTest(); renderDrill(); }}, ok ? "이 단계 복습하기" : "다시 공부하기"))
+  );
+}
+
+/* tones grid */
+(function(){
+  const g = $("tgrid"), y = l => 23 - (l-1)*5;
+  TONES.forEach(t=>{
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttribute("viewBox","0 0 44 26"); svg.setAttribute("aria-hidden","true");
+    const mk = (tag,a)=>{ const e=document.createElementNS("http://www.w3.org/2000/svg",tag); for(const k in a) e.setAttribute(k,a[k]); return e; };
+    svg.append(mk("line",{x1:2,x2:42,y1:y(1),y2:y(1)}), mk("line",{x1:2,x2:42,y1:y(5),y2:y(5)}));
+    svg.append(mk("polyline",{points:t.pts.map(([x,l])=>x+","+y(l)).join(" ")}));
+    if(t.pts2) svg.append(mk("polyline",{points:t.pts2.map(([x,l])=>x+","+y(l)).join(" ")}));
+    g.append(el("button",{class:"tcell", title:"ma 계열 예시 듣기", onclick:()=>speak("m"+t.m,"vi",.7)},
+      el("span",{class:"m"}, "m"+t.m), svg, el("span",{class:"nm"}, t.k), el("span",{class:"ds"}, t.ko)));
+  });
+})();
+
+/* ---------- Claude ---------- */
+const AI = { sample:null, ctl:null, turns:[], rules:"" };
+(async ()=>{
+  try{ AI.sample = window.claude ? await window.claude.use("sample") : null; }catch(e){ AI.sample = null; }
+  $("c-unavail").hidden = !!AI.sample;
+  $("c-start").disabled = !AI.sample; $("c-send").disabled = !AI.sample;
+})();
+function errText(e){
+  const c = e && e.code;
+  if(c==="not_granted"||c==="sampling_disabled"||c==="not_declared"||c==="capability_disabled"){ AI.sample=null; $("c-unavail").hidden=false; return "Claude 사용이 허용되지 않았습니다."; }
+  if(c==="rate_limited") return "요청이 많습니다. 잠시 뒤 다시 눌러 주세요.";
+  if(c==="session_expired") return "claude.ai에 다시 로그인해 주세요.";
+  if(c==="invalid_json") return "답변 형식이 어긋났습니다. 한 번 더 보내 주세요.";
+  return "연결이 끊겼습니다. 다시 시도해 주세요.";
+}
+
+/* chat */
+function chatRules(){
+  const si = +$("c-scene").value, lang = LANGNAME[S.lang];
+  const sc = SCENES[si] || null;
+  const role = sc ? sc.role[S.lang] : (S.lang==="vi" ? "a friendly Vietnamese friend" : "a friendly friend");
+  const level = $("c-level").value==="beginner" ? "beginner: use very short, simple, high-frequency sentences (under 10 words)" : "intermediate: natural everyday speech, up to 2 sentences";
+  return `You are a conversation partner helping a Korean speaker practice everyday spoken ${lang}. Stay in character as ${role}${sc?" (situation: "+sc.ko+")":""}. Level — ${level}.
+${S.lang==="vi"?"Use standard Vietnamese with full diacritics. ":""}Reply as a native speaker would actually talk in daily life. Ask something back so the conversation continues.
+The learner types or dictates via speech recognition, so ignore capitalization and punctuation. ${S.lang==="vi"?"Missing or wrong tone marks usually mean a pronunciation mistake — point them out in fix.":"Point out wrong words or unnatural phrasing in fix."} If the learner writes in Korean, treat it as "how do I say this" and put the ${lang} version in fix.better.
+Every reply must be ONLY this JSON object:
+{"reply":"your line in ${lang}","ko":"Korean translation of reply","fix":null or {"better":"a correct, natural version of the learner's last message in ${lang}","note":"one short Korean explanation"},"next":[{"t":"a short line the learner could say next in ${lang}","ko":"Korean meaning"},{"t":"...","ko":"..."}]}
+Set fix to null when the learner's last message was already natural and correct. When the learner says START, open the conversation yourself with fix null.`;
+}
+function spkBtn(text){ return el("button",{class:"spk","aria-label":"읽어주기", onclick:()=>speak(text,S.lang)}, "🔊"); }
+function addMsg(who, text, tr){
+  $("c-empty")?.remove();
+  const bub = el("div",{class:"bub"}, text, who==="ai"? spkBtn(text):null, tr? el("span",{class:"tr"}, tr):null);
+  const m = el("div",{class:"msg "+who}, bub);
+  $("c-log").append(m); $("c-log").scrollTop = $("c-log").scrollHeight;
+  return m;
+}
+function renderSugg(list){
+  const box = $("c-sugg"); box.replaceChildren();
+  (Array.isArray(list)?list:[]).slice(0,3).forEach(s=>{
+    if(!s || !s.t) return;
+    box.append(el("button",{type:"button", onclick:()=>{ $("c-in").value = s.t; $("c-in").focus(); speak(s.t,S.lang); }}, String(s.t), el("small",{}, String(s.ko||""))));
+  });
+}
+async function ask(userText){
+  if(!AI.sample) return;
+  const lastMe = userText!=="START" ? addMsg("me", userText) : null;
+  AI.turns.push({role:"user", content:userText});
+  const turns = [{role:"user", content:AI.rules}, ...AI.turns.slice(-24)];
+  const wait = addMsg("ai","…");
+  AI.ctl = new AbortController();
+  $("c-send").disabled = true; $("c-stop").hidden = false; renderSugg([]);
+  try{
+    const r = await AI.sample.json(turns, {modelTier:"quick", cache:false, signal:AI.ctl.signal});
+    wait.remove();
+    const reply = String(r && r.reply || "");
+    addMsg("ai", reply, r && r.ko ? String(r.ko) : "");
+    AI.turns.push({role:"assistant", content:JSON.stringify(r)});
+    if(lastMe && r && r.fix && r.fix.better){
+      lastMe.append(el("div",{class:"fix"}, el("b",{},"더 자연스럽게 "), String(r.fix.better), " ", spkBtn(String(r.fix.better)), r.fix.note? el("div",{}, String(r.fix.note)):null));
+    }
+    renderSugg(r && r.next);
+    if($("c-auto").checked && reply) speak(reply, S.lang);
+  }catch(e){
+    wait.remove();
+    AI.turns.pop();
+    if(!e || e.code!=="cancelled") addMsg("ai", errText(e));
+    if(lastMe) lastMe.remove();
+    if(userText!=="START") $("c-in").value = userText;
+  }finally{
+    $("c-send").disabled = !AI.sample; $("c-stop").hidden = true;
+    $("c-log").scrollTop = $("c-log").scrollHeight;
+  }
+}
+function startChat(){
+  AI.ctl?.abort();
+  AI.turns = []; AI.rules = chatRules();
+  $("c-log").replaceChildren(); renderSugg([]);
+  ask("START");
+}
+
+/* ---------- wiring ---------- */
+function setLang(l){
+  S.lang = l;
+  if(!unlocked(S.scene)){ S.scene = lastOpen(); S.idx = 0; }
+  save(); closeTest();
+  $("lang-vi").setAttribute("aria-pressed", String(l==="vi"));
+  $("lang-en").setAttribute("aria-pressed", String(l==="en"));
+  renderDrill();
+  $("c-in").lang = l;
+  $("c-log").replaceChildren(el("p",{class:"empty",id:"c-empty"}, "언어를 바꿨습니다. ", el("b",{},"새 대화 시작"), "을 눌러 주세요."));
+  AI.turns = []; renderSugg([]);
+}
+function setTab(t){
+  S.tab = t;
+  $("tab-drill").setAttribute("aria-pressed", String(t==="drill"));
+  $("tab-chat").setAttribute("aria-pressed", String(t==="chat"));
+  $("view-drill").hidden = t!=="drill"; $("view-chat").hidden = t!=="chat";
+}
+$("lang-vi").onclick = ()=>setLang("vi");
+$("lang-en").onclick = ()=>setLang("en");
+$("tab-drill").onclick = ()=>setTab("drill");
+$("tab-chat").onclick = ()=>setTab("chat");
+$("b-play").onclick = ()=>speak(textOf(cur()), S.lang, 1);
+$("b-slow").onclick = ()=>speak(textOf(cur()), S.lang, .6);
+$("b-prev").onclick = ()=>move(-1);
+$("b-next").onclick = ()=>move(1);
+$("b-test").onclick = startTest;
+$("c-start").onclick = startChat;
+$("c-stop").onclick = ()=>AI.ctl?.abort();
+$("c-form").addEventListener("submit", e=>{
+  e.preventDefault();
+  const v = $("c-in").value.trim(); if(!v || !AI.sample) return;
+  if(!AI.rules){ AI.rules = chatRules(); $("c-log").replaceChildren(); }
+  $("c-in").value = ""; ask(v);
+});
+(function(){
+  const s = $("c-scene");
+  SCENES.forEach((sc,i)=>s.append(el("option",{value:String(i)}, sc.ko)));
+  s.append(el("option",{value:"-1"}, "자유 대화"));
+})();
+setLang(S.lang);
+</script>
