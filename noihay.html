@@ -486,13 +486,19 @@ function pickVoice(lang){
   if(lang==="en"){ return vs.find(v=>/en-US/i.test(v.lang) && /natural|online|google/i.test(v.name)) || vs.find(v=>/en-US/i.test(v.lang)) || vs[0]; }
   return vs.find(v=>/natural|online|google/i.test(v.name)) || vs[0];
 }
+let ttsTimer = 0;
 function speak(text, lang, rate=1){
   if(!TTS.ok) return;
-  speechSynthesis.cancel();
+  if(!TTS.voices.length) TTS.voices = speechSynthesis.getVoices();
+  clearTimeout(ttsTimer);
+  if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/\(.*?\)/g,""));
   const v = pickVoice(lang); if(v) u.voice = v;
   u.lang = lang==="vi" ? "vi-VN" : "en-US"; u.rate = rate;
-  speechSynthesis.speak(u);
+  u.onerror = e => { if(e.error && e.error!=="canceled" && e.error!=="interrupted") flash("소리가 안 나요: "+e.error+(v?"":" (이 기기에 "+(lang==="vi"?"베트남어":"영어")+" 음성이 없어요)")); };
+  // 취소 직후 바로 재생하면 일부 브라우저(크롬·안드로이드)가 소리를 삼킴 → 잠깐 뒤 재생
+  ttsTimer = setTimeout(()=>{ speechSynthesis.resume(); speechSynthesis.speak(u); }, 80);
+  if(!v && TTS.voices.length) flash((lang==="vi"?"베트남어":"영어")+" 음성이 이 기기에 없어요. 기기 설정 > 음성 출력에서 설치하세요.");
 }
 function renderVoice(){
   const v = pickVoice(S.lang);
