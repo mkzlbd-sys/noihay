@@ -85,6 +85,8 @@ button{cursor:pointer}
 .hint{font-size:14px;color:var(--muted);margin:0}
 .enline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-left:3px solid var(--en);padding:2px 0 2px 12px}
 .enline .e{font-size:24px;font-weight:600;color:var(--en);line-height:1.3}
+.enline .e.veil{color:var(--muted);letter-spacing:.3em;font-weight:400}
+.item .t2.veil{color:var(--muted);letter-spacing:.2em}
 .item .t2{display:block;font-size:14px;color:var(--en);overflow-wrap:anywhere}
 .gw.en b{color:var(--en)}
 .gtitle{margin:6px 0 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -268,12 +270,13 @@ html[data-size="xl"] .log{max-height:40vh}
           <p class="ko" id="d-ko"></p>
           <p class="target" id="d-target"></p>
           <p class="hint" id="d-hint"></p>
-          <div class="enline" id="d-en" hidden><span class="e" id="d-en-t"></span><button class="btn" id="b-en" type="button">🔊 English</button></div>
+          <div class="enline" id="d-en" hidden><span class="e" id="d-en-t"></span><button class="btn" id="b-en" type="button">🔊 English</button><button class="btn" id="b-show" type="button">영어 보기</button></div>
           <div class="gloss" id="d-gloss"><h3>단어 풀이 · 누르면 발음</h3><div class="gwords" id="d-gwords"></div></div>
           <div class="row">
             <button class="btn primary" id="b-play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>듣기</button>
             <button class="btn" id="b-slow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>천천히</button>
             <button class="btn" id="b-vi" type="button" hidden>🔊 Tiếng Việt</button>
+            <button class="btn" id="b-hide" type="button" hidden aria-pressed="false">영어 가리기</button>
             <button class="btn" id="b-prev" aria-label="이전 표현">‹ 이전</button>
             <button class="btn" id="b-next" aria-label="다음 표현">다음 ›</button>
           </div>
@@ -447,7 +450,7 @@ const TONE_MARK = {"̀":"huyền","́":"sắc","̃":"ngã","̉":"hỏi","̣":"n�
 const LANGNAME = {vi:"Vietnamese", en:"English"};
 
 /* ---------- state ---------- */
-const S = {lang:"vi", tab:"drill", scene:0, idx:0, cleared:{vi:{}, en:{}, both:{}}};
+const S = {lang:"vi", tab:"drill", scene:0, idx:0, cleared:{vi:{}, en:{}, both:{}}, hide:false, reveal:""};
 const PASS = 80;
 const store = {
   get(){ try{ return JSON.parse(localStorage.getItem("noihay.v1")||"null"); }catch(e){ return null; } },
@@ -455,12 +458,12 @@ const store = {
 };
 (function load(){
   const d = store.get();
-  if(d) Object.assign(S, {lang:d.lang||"vi", scene:d.scene||0, idx:d.idx||0});
+  if(d) Object.assign(S, {hide:!!d.hide, lang:d.lang||"vi", scene:d.scene||0, idx:d.idx||0});
   if(d && d.cleared) S.cleared = {vi:d.cleared.vi||{}, en:d.cleared.en||{}, both:d.cleared.both||{}};
   if(!SCENES[S.scene]) S.scene = 0;
   if(!SCENES[S.scene].items[S.idx]) S.idx = 0;
 })();
-function save(){ store.set({lang:S.lang, scene:S.scene, idx:S.idx, cleared:S.cleared}); }
+function save(){ store.set({hide:S.hide, lang:S.lang, scene:S.scene, idx:S.idx, cleared:S.cleared}); }
 /* stage si is open once the stage before it has a passing test in this language */
 const bestOf = si => S.cleared[S.lang][SCENES[si].id] || 0;
 const passed = si => bestOf(si) >= PASS;
@@ -562,7 +565,7 @@ function renderList(){
   SCENES[S.scene].items.forEach((it,i)=>{
     box.append(el("button",{class:"item","aria-current":String(i===S.idx), onclick:()=>{S.idx=i;save();renderDrill();}},
       el("span",{class:"dot"+(i===S.idx?" done":"")}),
-      el("span",{}, el("span",{class:"t"}, textOf(it)), both() ? el("span",{class:"t2"}, it[3]) : el("br"), el("span",{class:"k"}, it[0]))));
+      el("span",{}, el("span",{class:"t"}, textOf(it)), both() ? el("span",{class:"t2"+(S.hide?" veil":"")}, S.hide ? "• • •" : it[3]) : el("br"), el("span",{class:"k"}, it[0]))));
   });
 }
 function renderCard(){
@@ -584,7 +587,8 @@ function renderCard(){
   }
   $("d-hint").hidden = !vi;
   $("d-en").hidden = !both(); $("b-vi").hidden = !both();
-  if(both()) $("d-en-t").textContent = it[3];
+  $("b-hide").hidden = !both();
+  paintEn(it);
   const gw = $("d-gwords"); gw.replaceChildren();
   const gl = (l, text) => glossWords(text, l).forEach(([w,m])=>gw.append(
     el("button",{class:"gw"+(m?"":" unk")+(l==="en"?" en":""), type:"button", title:"발음 듣기", onclick:()=>speak(w.replace(/^wi fi$/,"Wi-Fi"),l,.8)}, el("b",{}, w), el("span",{}, m||"—"))));
@@ -599,6 +603,16 @@ function renderCard(){
   $("b-next").textContent = atEnd && !passed(S.scene) ? "시험 보기 ›" : "다음 ›";
   renderVoice();
 }
+/* 영어 가리기: 베트남어를 보고 영어를 먼저 말해 본 뒤 '영어 보기'로 확인 */
+function paintEn(it=cur()){
+  const key = S.scene+":"+S.idx, shown = !S.hide || S.reveal===key;
+  const t = $("d-en-t"); t.textContent = shown ? it[3] : "• • •"; t.classList.toggle("veil", !shown);
+  $("b-show").hidden = shown;
+  $("b-hide").textContent = S.hide ? "영어 가리기: 켬" : "영어 가리기: 끔";
+  $("b-hide").setAttribute("aria-pressed", String(S.hide));
+}
+$("b-hide").onclick = ()=>{ S.hide = !S.hide; S.reveal = ""; save(); renderList(); paintEn(); };
+$("b-show").onclick = ()=>{ S.reveal = S.scene+":"+S.idx; paintEn(); };
 function renderDrill(){ renderScenes(); renderStage(); renderList(); renderCard(); }
 function move(d){
   let si=S.scene, i=S.idx+d;
