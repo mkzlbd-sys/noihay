@@ -29,6 +29,7 @@
   --ok:#45C08D; --ok-soft:#153428; --tone:#E3A94B; --tone-soft:#3A2C12; --miss:#EF6B6B; --miss-soft:#3B1A1A;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55}
 .wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -47,6 +48,7 @@ button{cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .seg button[data-lang="vi"][aria-pressed="true"]{color:var(--vn)}
 .seg button[data-lang="en"][aria-pressed="true"]{color:var(--en)}
+.seg button[data-lang="both"][aria-pressed="true"]{color:var(--jade)}
 
 /* scenes */
 .scenes{display:flex;flex-wrap:wrap;gap:8px}
@@ -81,6 +83,13 @@ button{cursor:pointer}
 .syl .tn{font-size:11px;color:var(--muted);letter-spacing:.02em}
 .lang-en .syl .w{font-size:30px}
 .hint{font-size:14px;color:var(--muted);margin:0}
+.enline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-left:3px solid var(--en);padding:2px 0 2px 12px}
+.enline .e{font-size:24px;font-weight:600;color:var(--en);line-height:1.3}
+.enline .e.veil{color:var(--muted);letter-spacing:.3em;font-weight:400}
+.item .t2.veil{color:var(--muted);letter-spacing:.2em}
+.item .t2{display:block;font-size:14px;color:var(--en);overflow-wrap:anywhere}
+.gw.en b{color:var(--en)}
+.gtitle{margin:6px 0 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .hint b{font-weight:500;color:var(--ink)}
 .gloss{display:flex;flex-direction:column;gap:8px;margin:0}
 .gloss h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
@@ -101,6 +110,10 @@ button{cursor:pointer}
 .say label{font-size:13px;color:var(--muted)}
 .say .in{display:flex;gap:8px}
 .say input{flex:1;min-width:0;border:1px solid var(--line);background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:17px}
+.wd.near{background:var(--tone-soft);color:var(--tone)}
+.btn.rec{background:var(--miss-soft);border-color:var(--miss);color:var(--miss)}
+.heard{font-size:14px;color:var(--muted);margin:0}
+.heard b{color:var(--ink);font-weight:500}
 .tip{font-size:12.5px;color:var(--muted);margin:0}
 kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
 
@@ -149,7 +162,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 .bub{border-radius:14px;padding:10px 14px;font-size:16px}
 .ai .bub{background:var(--sunk);border-top-left-radius:4px}
 .me .bub{background:var(--jade);color:var(--jade-ink);border-top-right-radius:4px}
-.bub .tr{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+.bub .tr{display:block;font-size:13px;color:var(--muted);margin-top:3px;white-space:pre-line}
 .bub .spk{border:0;background:transparent;padding:0 0 0 6px;color:var(--jade);vertical-align:-2px}
 .fix{background:var(--tone-soft);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:13.5px;max-width:100%}
 .fix b{color:var(--tone);font-weight:600}
@@ -225,12 +238,13 @@ html[data-size="xl"] .log{max-height:40vh}
   <header class="top">
     <div class="brand">
       <h1>Nói <span>Hay</span></h1>
-      <small>베트남어 · 영어 생활 회화</small>
+      <small>베트남어 · 영어 생활 회화 (함께 공부 가능)</small>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="학습 언어">
         <button id="lang-vi" data-lang="vi" aria-pressed="true">Tiếng Việt</button>
         <button id="lang-en" data-lang="en" aria-pressed="false">English</button>
+        <button id="lang-both" data-lang="both" aria-pressed="false" title="베트남어와 영어를 함께 공부">VI + EN</button>
       </div>
       <div class="seg" role="group" aria-label="모드">
         <button id="tab-drill" data-tab="drill" aria-pressed="true">표현 연습</button>
@@ -260,13 +274,22 @@ html[data-size="xl"] .log{max-height:40vh}
           <p class="ko" id="d-ko"></p>
           <p class="target" id="d-target"></p>
           <p class="hint" id="d-hint"></p>
+          <div class="enline" id="d-en" hidden><span class="e" id="d-en-t"></span><button class="btn" id="b-en" type="button">🔊 English</button><button class="btn" id="b-show" type="button">영어 보기</button></div>
           <div class="gloss" id="d-gloss"><h3>단어 풀이 · 누르면 발음</h3><div class="gwords" id="d-gwords"></div></div>
           <div class="row">
             <button class="btn primary" id="b-play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>듣기</button>
             <button class="btn" id="b-slow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>천천히</button>
+            <button class="btn" id="b-vi" type="button" hidden>🔊 Tiếng Việt</button>
+            <button class="btn" id="b-hide" type="button" hidden aria-pressed="false">영어 가리기</button>
             <button class="btn" id="b-prev" aria-label="이전 표현">‹ 이전</button>
             <button class="btn" id="b-next" aria-label="다음 표현">다음 ›</button>
           </div>
+          <div class="row">
+            <button class="btn" id="b-mic" type="button">🎤 발음 확인</button>
+            <button class="btn" id="b-mic-en" type="button" hidden>🎤 영어 발음 확인</button>
+          </div>
+          <p class="tip" id="d-mic-tip" hidden>이 브라우저는 발음 확인(음성 인식)을 지원하지 않아요. 크롬·엣지·사파리에서 열어 주세요.</p>
+          <div class="result" id="d-result" hidden></div>
         </article>
 
         <aside class="tones" id="tones">
@@ -437,7 +460,7 @@ const TONE_MARK = {"̀":"huyền","́":"sắc","̃":"ngã","̉":"hỏi","̣":"n�
 const LANGNAME = {vi:"Vietnamese", en:"English"};
 
 /* ---------- state ---------- */
-const S = {lang:"vi", tab:"drill", scene:0, idx:0, cleared:{vi:{}, en:{}}};
+const S = {lang:"vi", tab:"drill", scene:0, idx:0, cleared:{vi:{}, en:{}, both:{}}, hide:false, reveal:""};
 const PASS = 80;
 const store = {
   get(){ try{ return JSON.parse(localStorage.getItem("noihay.v1")||"null"); }catch(e){ return null; } },
@@ -445,12 +468,12 @@ const store = {
 };
 (function load(){
   const d = store.get();
-  if(d) Object.assign(S, {lang:d.lang||"vi", scene:d.scene||0, idx:d.idx||0});
-  if(d && d.cleared) S.cleared = {vi:d.cleared.vi||{}, en:d.cleared.en||{}};
+  if(d) Object.assign(S, {hide:!!d.hide, lang:d.lang||"vi", scene:d.scene||0, idx:d.idx||0});
+  if(d && d.cleared) S.cleared = {vi:d.cleared.vi||{}, en:d.cleared.en||{}, both:d.cleared.both||{}};
   if(!SCENES[S.scene]) S.scene = 0;
   if(!SCENES[S.scene].items[S.idx]) S.idx = 0;
 })();
-function save(){ store.set({lang:S.lang, scene:S.scene, idx:S.idx, cleared:S.cleared}); }
+function save(){ store.set({hide:S.hide, lang:S.lang, scene:S.scene, idx:S.idx, cleared:S.cleared}); }
 /* stage si is open once the stage before it has a passing test in this language */
 const bestOf = si => S.cleared[S.lang][SCENES[si].id] || 0;
 const passed = si => bestOf(si) >= PASS;
@@ -468,7 +491,12 @@ document.querySelectorAll(".seg.size button").forEach(b=>b.addEventListener("cli
 paintSize();
 const cur = () => SCENES[S.scene].items[S.idx];
 const pid = (si, i) => S.lang + ":" + SCENES[si].id + ":" + i;
-const textOf = it => S.lang==="vi" ? it[1] : it[3];
+const textOf = it => S.lang==="en" ? it[3] : it[1];  /* "함께" 모드의 기본 글은 베트남어, 영어는 it[3]으로 따로 표시 */
+const both = () => S.lang==="both";
+const LANGLABEL = {vi:"베트남어", en:"영어"};
+const VI_CH = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
+/* 채팅에서 읽어 줄 언어: 함께 모드에서는 글자를 보고 추정 */
+const guessLang = t => S.lang!=="both" ? S.lang : VI_CH.test(t) ? "vi" : /\b(the|is|are|am|i|you|we|a|an|to|and|can|please|how|what|where|my|it|of|in|on|for|have|do|this|that|yes|no|hello|thanks)\b/i.test(t) ? "en" : "vi";
 
 /* ---------- text analysis ---------- */
 function tokens(s){
@@ -487,7 +515,9 @@ function pickVoice(lang){
   return vs.find(v=>/natural|online|google/i.test(v.name)) || vs[0];
 }
 let ttsTimer = 0;
-function speak(text, lang, rate=1){
+let seqTok = 0;
+function speak(text, lang, rate=1, then){
+  seqTok++;
   if(!TTS.ok) return;
   if(!TTS.voices.length) TTS.voices = speechSynthesis.getVoices();
   clearTimeout(ttsTimer);
@@ -495,15 +525,116 @@ function speak(text, lang, rate=1){
   const u = new SpeechSynthesisUtterance(text.replace(/\(.*?\)/g,""));
   const v = pickVoice(lang); if(v) u.voice = v;
   u.lang = lang==="vi" ? "vi-VN" : "en-US"; u.rate = rate;
+  if(then) u.onend = then;
   u.onerror = e => { if(e.error && e.error!=="canceled" && e.error!=="interrupted") flash("소리가 안 나요: "+e.error+(v?"":" (이 기기에 "+(lang==="vi"?"베트남어":"영어")+" 음성이 없어요)")); };
   // 취소 직후 바로 재생하면 일부 브라우저(크롬·안드로이드)가 소리를 삼킴 → 잠깐 뒤 재생
   ttsTimer = setTimeout(()=>{ speechSynthesis.resume(); speechSynthesis.speak(u); }, 80);
   if(!v && TTS.voices.length) flash((lang==="vi"?"베트남어":"영어")+" 음성이 이 기기에 없어요. 기기 설정 > 음성 출력에서 설치하세요.");
 }
+function speakSeq(list, rate=1){
+  let tok; const [a,...rest] = list;
+  speak(a[0], a[1], rate, rest.length ? ()=>{ if(tok===seqTok) speakSeq(rest, rate); } : undefined);
+  tok = seqTok;
+}
 function renderVoice(){
+  if(both()){
+    const nm = v => v ? v.name.replace(/^Microsoft\s+/,"").replace(/\s*-.*$/,"") : "없음";
+    $("d-voice").textContent = !TTS.ok ? "음성 재생 불가" : TTS.voices.length ? "음성 · 베트남어 "+nm(pickVoice("vi"))+" / 영어 "+nm(pickVoice("en")) : "";
+    return;
+  }
   const v = pickVoice(S.lang);
   $("d-voice").textContent = !TTS.ok ? "음성 재생 불가" : v ? "음성 · " + v.name.replace(/^Microsoft\s+/,"").replace(/\s*-.*$/,"") : (TTS.voices.length ? (S.lang==="vi"?"베트남어 음성 없음":"영어 음성 없음") : "");
 }
+
+
+/* ---------- pronunciation check (음성 인식으로 따라 말하기 → 단어별 비교) ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const NUMW = {
+  vi:{"0":"không","1":"một","2":"hai","3":"ba","4":"bốn","5":"năm","6":"sáu","7":"bảy","8":"tám","9":"chín","10":"mười"},
+  en:{"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine","10":"ten"}
+};
+const baseOf = w => w.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d");
+const normTokens = (text, lang) => tokens(text).map(w=>w.replace(/'/g,"")).filter(Boolean).map(w=>NUMW[lang][w]||w);
+function editDist(a,b){
+  const d = Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);
+  for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+    d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+/* 정답 단어마다 ok(일치) / near(거의 맞음: 베트남어는 성조·모음만 다름, 영어는 한 글자 차이) / miss(안 들림) */
+function grade(target, heard, lang){
+  const T = normTokens(target,lang), H = normTokens(heard,lang), n = T.length, m = H.length;
+  const dp = Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++)
+    dp[i][j] = T[i-1]===H[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  const st = Array(n).fill("miss"), used = new Set(); let i=n, j=m;
+  while(i>0 && j>0){
+    if(T[i-1]===H[j-1]){ st[i-1]="ok"; used.add(j-1); i--; j--; }
+    else if(dp[i-1][j]>=dp[i][j-1]) i--; else j--;
+  }
+  const said = Array(n).fill("");
+  T.forEach((w,k)=>{
+    if(st[k]==="ok") return;
+    const jj = H.findIndex((h,x)=>!used.has(x) && (lang==="vi" ? baseOf(h)===baseOf(w) : (w.length>3 && editDist(h,w)<=1)));
+    if(jj>=0){ st[k]="near"; said[k]=H[jj]; used.add(jj); }
+  });
+  const ok = st.filter(x=>x==="ok").length, near = st.filter(x=>x==="near").length;
+  return {T, disp: tokens(target).filter(w=>w.replace(/'/g,"")), st, said, score: n ? Math.round((ok+near*.5)/n*100) : 0};
+}
+let rec = null, recLang = "";
+function paintMic(){
+  [["b-mic", both()?"vi":S.lang, both()?"🎤 베트남어 발음 확인":"🎤 발음 확인"], ["b-mic-en","en","🎤 영어 발음 확인"]].forEach(([id,l,label])=>{
+    const b = $(id), on = !!rec && recLang===l;
+    b.textContent = on ? "■ 듣는 중… (누르면 중지)" : label; b.classList.toggle("rec", on);
+  });
+  $("b-mic").hidden = !SR; $("b-mic-en").hidden = !SR || !both(); $("d-mic-tip").hidden = !!SR;
+}
+function stopRec(){ const r = rec; rec = null; try{ r && r.abort(); }catch(e){} paintMic(); }
+function resMsg(text){ const r=$("d-result"); r.hidden=false; r.replaceChildren(el("p",{class:"note"}, text)); }
+function showResult(target, heard, g, lang){
+  const msg = g.score>=90 ? "아주 좋아요!" : g.score>=70 ? "좋아요. 노란색·빨간색 단어만 다시 해 보세요." : "다시 한 번 천천히 말해 보세요.";
+  const tips = [];
+  g.T.forEach((w,k)=>{
+    if(g.st[k]==="near") tips.push("“"+g.disp[k]+"” → “"+g.said[k]+"”로 들렸어요"+(lang==="vi"?" (성조·모음 확인)":" (소리를 또렷하게)"));
+    else if(g.st[k]==="miss") tips.push("“"+g.disp[k]+"” 가 안 들렸어요");
+  });
+  $("d-result").hidden = false;
+  $("d-result").replaceChildren(
+    el("div",{class:"score"}, el("span",{class:"num", style:"color:var(--"+(g.score>=70?"ok":"miss")+")"}, String(g.score)), el("span",{class:"msg"}, msg), el("span",{class:"ex"}, LANGLABEL[lang])),
+    el("div",{class:"words"}, ...g.T.map((w,k)=>el("span",{class:"wd "+g.st[k]}, g.disp[k]||w))),
+    el("div",{class:"legend"}, el("span",{}, el("i",{style:"background:var(--ok-soft)"}), "맞음"), el("span",{}, el("i",{style:"background:var(--tone-soft)"}), "거의 맞음"), el("span",{}, el("i",{style:"background:var(--miss-soft)"}), "안 들림")),
+    el("p",{class:"heard"}, "인식된 말: ", el("b",{}, heard || "—")),
+    tips.length ? el("p",{class:"coach"}, tips.join("\n")) : null);
+}
+function checkPron(lang){
+  if(!SR) return;
+  if(rec){ const same = recLang===lang; stopRec(); if(same) return; }
+  if(TTS.ok){ clearTimeout(ttsTimer); speechSynthesis.cancel(); }
+  const target = lang==="vi" ? cur()[1] : cur()[3];
+  const r = new SR(); let got = false;
+  r.lang = lang==="vi" ? "vi-VN" : "en-US"; r.interimResults = false; r.maxAlternatives = 3; r.continuous = false;
+  r.onresult = e => {
+    got = true;
+    const alts = [...e.results[0]].map(a=>a.transcript);
+    let best = null;
+    alts.forEach(a=>{ const g = grade(target, a, lang); if(!best || g.score>best.g.score) best = {a, g}; });
+    showResult(target, best.a, best.g, lang);
+  };
+  r.onerror = e => {
+    got = true;
+    resMsg(e.error==="not-allowed"||e.error==="service-not-allowed" ? "마이크 사용이 막혀 있어요. 주소창 옆 자물쇠에서 마이크를 허용해 주세요. (claude.ai 안에서는 막힐 수 있으니 깃허브 페이지 주소로 열어 보세요.)"
+      : e.error==="no-speech" ? "말소리가 안 들렸어요. 마이크에 가까이 대고 다시 눌러 주세요."
+      : e.error==="audio-capture" ? "마이크를 찾지 못했어요."
+      : e.error==="aborted" ? "" : "인식에 실패했어요 ("+e.error+"). 다시 시도해 주세요.");
+    if(e.error==="aborted") $("d-result").hidden = true;
+  };
+  r.onend = () => { if(rec===r){ rec = null; paintMic(); if(!got) resMsg("말소리가 안 들렸어요. 다시 눌러 주세요."); } };
+  rec = r; recLang = lang; paintMic();
+  try{ r.start(); }catch(e){ rec = null; paintMic(); resMsg("마이크를 시작하지 못했어요. 다시 눌러 주세요."); }
+}
+$("b-mic").onclick = ()=>checkPron(both() ? "vi" : S.lang);
+$("b-mic-en").onclick = ()=>checkPron("en");
 
 /* ---------- drill render ---------- */
 function renderScenes(){
@@ -534,11 +665,12 @@ function renderList(){
   SCENES[S.scene].items.forEach((it,i)=>{
     box.append(el("button",{class:"item","aria-current":String(i===S.idx), onclick:()=>{S.idx=i;save();renderDrill();}},
       el("span",{class:"dot"+(i===S.idx?" done":"")}),
-      el("span",{}, el("span",{class:"t"}, textOf(it)), el("br"), el("span",{class:"k"}, it[0]))));
+      el("span",{}, el("span",{class:"t"}, textOf(it)), both() ? el("span",{class:"t2"+(S.hide?" veil":"")}, S.hide ? "• • •" : it[3]) : el("br"), el("span",{class:"k"}, it[0]))));
   });
 }
 function renderCard(){
-  const it = cur(), sc = SCENES[S.scene], vi = S.lang==="vi";
+  stopRec(); $("d-result").hidden = true;
+  const it = cur(), sc = SCENES[S.scene], vi = S.lang!=="en";
   $("drill").classList.toggle("lang-en", !vi);
   $("d-pos").textContent = sc.ko + " · " + (S.idx+1) + " / " + sc.items.length;
   $("d-ko").textContent = it[0];
@@ -555,16 +687,33 @@ function renderCard(){
     $("d-hint").textContent = "";
   }
   $("d-hint").hidden = !vi;
+  $("d-en").hidden = !both(); $("b-vi").hidden = !both();
+  $("b-hide").hidden = !both();
+  paintEn(it);
   const gw = $("d-gwords"); gw.replaceChildren();
-  glossWords(raw, S.lang).forEach(([w,m])=>gw.append(
-    el("button",{class:"gw"+(m?"":" unk"), type:"button", title:"발음 듣기", onclick:()=>speak(w.replace(/^wi fi$/,"Wi-Fi"),S.lang,.8)}, el("b",{}, w), el("span",{}, m||"—"))));
+  const gl = (l, text) => glossWords(text, l).forEach(([w,m])=>gw.append(
+    el("button",{class:"gw"+(m?"":" unk")+(l==="en"?" en":""), type:"button", title:"발음 듣기", onclick:()=>speak(w.replace(/^wi fi$/,"Wi-Fi"),l,.8)}, el("b",{}, w), el("span",{}, m||"—"))));
+  gl(vi ? "vi" : "en", raw);
+  if(both()) gl("en", it[3]);
   $("d-gloss").hidden = !gw.children.length;
   $("tones").hidden = !vi;
   $("b-prev").disabled = S.idx===0 && S.scene===0;
   const atEnd = S.idx===sc.items.length-1;
+  $("b-vi").onclick = ()=>speak(it[1],"vi",1);
+  $("b-en").onclick = ()=>speak(it[3],"en",1);
   $("b-next").textContent = atEnd && !passed(S.scene) ? "시험 보기 ›" : "다음 ›";
   renderVoice();
 }
+/* 영어 가리기: 베트남어를 보고 영어를 먼저 말해 본 뒤 '영어 보기'로 확인 */
+function paintEn(it=cur()){
+  const key = S.scene+":"+S.idx, shown = !S.hide || S.reveal===key;
+  const t = $("d-en-t"); t.textContent = shown ? it[3] : "• • •"; t.classList.toggle("veil", !shown);
+  $("b-show").hidden = shown;
+  $("b-hide").textContent = S.hide ? "영어 가리기: 켬" : "영어 가리기: 끔";
+  $("b-hide").setAttribute("aria-pressed", String(S.hide));
+}
+$("b-hide").onclick = ()=>{ S.hide = !S.hide; S.reveal = ""; save(); renderList(); paintEn(); };
+$("b-show").onclick = ()=>{ S.reveal = S.scene+":"+S.idx; paintEn(); };
 function renderDrill(){ renderScenes(); renderStage(); renderList(); renderCard(); }
 function move(d){
   let si=S.scene, i=S.idx+d;
@@ -581,25 +730,33 @@ const T = { qs:[], n:0, right:0, wrong:[], answered:false };
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 function pickOthers(pool, answer, k=3){ return shuffle([...new Set(pool.filter(x=>x!==answer))]).slice(0,k); }
 function buildTest(si){
-  const items = SCENES[si].items, lang = S.lang;
-  const targets = items.map(textOf), kos = items.map(it=>it[0]);
-  const allTargets = SCENES.flatMap(s=>s.items.map(textOf));
+  const items = SCENES[si].items, kos = items.map(it=>it[0]);
+  const langs = both() ? ["vi","en"] : [S.lang];
+  const tg = {vi:items.map(it=>it[1]), en:items.map(it=>it[3])};
+  const all = {vi:SCENES.flatMap(s=>s.items.map(it=>it[1])), en:SCENES.flatMap(s=>s.items.map(it=>it[3]))};
   const qs = [];
   const kinds = shuffle(["meaning","sentence","listen","meaning","sentence","listen"]);
-  shuffle(items.map((_,i)=>i)).forEach((i,n)=>{
-    const kind = kinds[n % kinds.length];
-    if(kind==="meaning") qs.push({kind, label:"뜻 고르기", prompt:targets[i], speakText:targets[i], answer:kos[i], opts:shuffle([kos[i], ...pickOthers(kos, kos[i])])});
-    else if(kind==="sentence") qs.push({kind, label:"알맞은 문장 고르기", prompt:kos[i], answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets.length>=4?targets:allTargets, targets[i])])});
-    else qs.push({kind, label:"듣고 고르기", prompt:"🔊 들리는 문장을 고르세요", speakText:targets[i], answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets, targets[i])])});
+  const idxs = shuffle(items.map((_,i)=>i));
+  idxs.forEach((i,n)=>{
+    const kind = kinds[n % kinds.length], l = langs[n % langs.length], targets = tg[l];
+    if(kind==="meaning") qs.push({kind, label:"뜻 고르기"+(both()?" · "+LANGLABEL[l]:""), prompt:targets[i], sl:l, speakText:targets[i], answer:kos[i], opts:shuffle([kos[i], ...pickOthers(kos, kos[i])])});
+    else if(kind==="sentence") qs.push({kind, label:"알맞은 문장 고르기"+(both()?" · "+LANGLABEL[l]:""), prompt:kos[i], al:l, answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets.length>=4?targets:all[l], targets[i])])});
+    else qs.push({kind, label:"듣고 고르기"+(both()?" · "+LANGLABEL[l]:""), prompt:"🔊 들리는 문장을 고르세요", sl:l, al:l, speakText:targets[i], answer:targets[i], opts:shuffle([targets[i], ...pickOthers(targets, targets[i])])});
   });
-  /* two word / phrase questions from the stage's glossary */
-  const dict = new Map();
-  targets.forEach(t=>glossWords(t, lang).forEach(([w,m])=>{ if(m) dict.set(w,m); }));
-  const words = shuffle([...dict.keys()]);
-  const means = [...new Set(dict.values())];
-  words.slice(0,2).forEach(w=>{
-    const m = dict.get(w);
-    qs.push({kind:"word", label:"단어·표현 뜻", prompt:w, speakText:w, answer:m, opts:shuffle([m, ...pickOthers(means, m)])});
+  /* 함께 모드: 베트남어 ↔ 영어 짝 맞추기 두 문제 */
+  if(both()) shuffle(idxs).slice(0,2).forEach((i,k)=>{
+    const [a,b] = k%2 ? ["en","vi"] : ["vi","en"], pool = tg[b].length>=4 ? tg[b] : all[b];
+    qs.push({kind:"translate", label:LANGLABEL[a]+" → "+LANGLABEL[b]+" 짝 찾기", prompt:tg[a][i], sl:a, speakText:tg[a][i], al:b, answer:tg[b][i], opts:shuffle([tg[b][i], ...pickOthers(pool, tg[b][i])])});
+  });
+  /* 단어·표현 풀이 문제 */
+  langs.forEach(l=>{
+    const dict = new Map();
+    tg[l].forEach(t=>glossWords(t, l).forEach(([w,m])=>{ if(m) dict.set(w,m); }));
+    const means = [...new Set(dict.values())];
+    shuffle([...dict.keys()]).slice(0, both()?1:2).forEach(w=>{
+      const m = dict.get(w);
+      qs.push({kind:"word", label:"단어·표현 뜻"+(both()?" · "+LANGLABEL[l]:""), prompt:w, sl:l, speakText:w, answer:m, opts:shuffle([m, ...pickOthers(means, m)])});
+    });
   });
   return shuffle(qs);
 }
@@ -612,7 +769,7 @@ function startTest(){
 function closeTest(){ $("test").hidden = true; $("grid").hidden = false; $("stage").hidden = false; }
 function renderQ(){
   const q = T.qs[T.n], box = $("test"); T.answered = false;
-  const say = q.speakText ? el("button",{class:"btn", type:"button", onclick:()=>speak(q.speakText, S.lang, q.kind==="listen"?.9:.85)}, "🔊 듣기") : null;
+  const say = q.speakText ? el("button",{class:"btn", type:"button", onclick:()=>speak(q.speakText, q.sl, q.kind==="listen"?.9:.85)}, "🔊 듣기") : null;
   const next = el("button",{class:"btn primary", id:"t-next", type:"button", onclick:()=>{ T.n++; T.n<T.qs.length ? renderQ() : renderResult(); }}, T.n+1<T.qs.length ? "다음 문제 ›" : "결과 보기 ›");
   next.hidden = true;
   const opts = el("div",{class:"opts"});
@@ -622,7 +779,7 @@ function renderQ(){
       const ok = o===q.answer; if(ok) T.right++; else T.wrong.push(q);
       [...opts.children].forEach(b=>{ b.disabled = true; if(b.textContent===q.answer) b.classList.add("right"); });
       if(!ok) e.currentTarget.classList.add("wrong");
-      if(q.kind==="sentence" || q.kind==="listen") speak(q.answer, S.lang, .9);
+      if(q.al) speak(q.answer, q.al, .9);
       next.hidden = false; next.focus();
     }}, o));
   });
@@ -635,7 +792,7 @@ function renderQ(){
     opts,
     el("div",{class:"row"}, next, el("button",{class:"btn", type:"button", onclick:()=>{ closeTest(); renderDrill(); }}, "그만두기"))
   );
-  if(q.kind==="listen") speak(q.speakText, S.lang, .9);
+  if(q.kind==="listen") speak(q.speakText, q.sl, .9);
 }
 function renderResult(){
   const score = Math.round(T.right / T.qs.length * 100), si = S.scene, ok = score >= PASS;
@@ -690,18 +847,19 @@ function errText(e){
 
 /* chat */
 function chatRules(){
-  const si = +$("c-scene").value, lang = LANGNAME[S.lang];
+  const si = +$("c-scene").value, bo = both(), lang = bo ? "Vietnamese" : LANGNAME[S.lang];
   const sc = SCENES[si] || null;
-  const role = sc ? sc.role[S.lang] : (S.lang==="vi" ? "a friendly Vietnamese friend" : "a friendly friend");
+  const rl = S.lang==="en" ? "en" : "vi";
+  const role = sc ? sc.role[rl] : (rl==="vi" ? "a friendly Vietnamese friend" : "a friendly friend");
   const level = $("c-level").value==="beginner" ? "beginner: use very short, simple, high-frequency sentences (under 10 words)" : "intermediate: natural everyday speech, up to 2 sentences";
   return `You are a conversation partner helping a Korean speaker practice everyday spoken ${lang}. Stay in character as ${role}${sc?" (situation: "+sc.ko+")":""}. Level — ${level}.
-${S.lang==="vi"?"Use standard Vietnamese with full diacritics. ":""}Reply as a native speaker would actually talk in daily life. Ask something back so the conversation continues.
-The learner types or dictates via speech recognition, so ignore capitalization and punctuation. ${S.lang==="vi"?"Missing or wrong tone marks usually mean a pronunciation mistake — point them out in fix.":"Point out wrong words or unnatural phrasing in fix."} If the learner writes in Korean, treat it as "how do I say this" and put the ${lang} version in fix.better.
+${S.lang!=="en"?"Use standard Vietnamese with full diacritics. ":""}${bo?"The learner studies Vietnamese and English together: always speak Vietnamese, and add an English translation of every line. The learner may answer in Vietnamese or English; correct whichever language they used and write fix.better in that same language. ":""}Reply as a native speaker would actually talk in daily life. Ask something back so the conversation continues.
+The learner types or dictates via speech recognition, so ignore capitalization and punctuation. ${S.lang!=="en"?"Missing or wrong tone marks usually mean a pronunciation mistake — point them out in fix.":"Point out wrong words or unnatural phrasing in fix."} If the learner writes in Korean, treat it as "how do I say this" and put the ${lang} version in fix.better.
 Every reply must be ONLY this JSON object:
-{"reply":"your line in ${lang}","ko":"Korean translation of reply","fix":null or {"better":"a correct, natural version of the learner's last message in ${lang}","note":"one short Korean explanation"},"next":[{"t":"a short line the learner could say next in ${lang}","ko":"Korean meaning"},{"t":"...","ko":"..."}]}
+{"reply":"your line in ${lang}","ko":"Korean translation of reply",${bo?`"en":"English translation of reply",`:""}"fix":null or {"better":"a correct, natural version of the learner's last message in ${lang}","note":"one short Korean explanation"},"next":[{"t":"a short line the learner could say next in ${lang}","ko":"Korean meaning"${bo?`,"en":"English meaning"`:""}},{"t":"..."}]}
 Set fix to null when the learner's last message was already natural and correct. When the learner says START, open the conversation yourself with fix null.`;
 }
-function spkBtn(text){ return el("button",{class:"spk","aria-label":"읽어주기", onclick:()=>speak(text,S.lang)}, "🔊"); }
+function spkBtn(text){ return el("button",{class:"spk","aria-label":"읽어주기", onclick:()=>speak(text,guessLang(text))}, "🔊"); }
 function addMsg(who, text, tr){
   $("c-empty")?.remove();
   const bub = el("div",{class:"bub"}, text, who==="ai"? spkBtn(text):null, tr? el("span",{class:"tr"}, tr):null);
@@ -713,7 +871,7 @@ function renderSugg(list){
   const box = $("c-sugg"); box.replaceChildren();
   (Array.isArray(list)?list:[]).slice(0,3).forEach(s=>{
     if(!s || !s.t) return;
-    box.append(el("button",{type:"button", onclick:()=>{ $("c-in").value = s.t; $("c-in").focus(); speak(s.t,S.lang); }}, String(s.t), el("small",{}, String(s.ko||""))));
+    box.append(el("button",{type:"button", onclick:()=>{ $("c-in").value = s.t; $("c-in").focus(); speak(s.t,guessLang(s.t)); }}, String(s.t), el("small",{}, [s.en, s.ko].filter(Boolean).join(" · "))));
   });
 }
 async function ask(userText){
@@ -728,13 +886,13 @@ async function ask(userText){
     const r = await AI.sample.json(turns, {modelTier:"quick", cache:false, signal:AI.ctl.signal});
     wait.remove();
     const reply = String(r && r.reply || "");
-    addMsg("ai", reply, r && r.ko ? String(r.ko) : "");
+    addMsg("ai", reply, [r && r.en, r && r.ko].filter(Boolean).map(String).join("\n"));
     AI.turns.push({role:"assistant", content:JSON.stringify(r)});
     if(lastMe && r && r.fix && r.fix.better){
       lastMe.append(el("div",{class:"fix"}, el("b",{},"더 자연스럽게 "), String(r.fix.better), " ", spkBtn(String(r.fix.better)), r.fix.note? el("div",{}, String(r.fix.note)):null));
     }
     renderSugg(r && r.next);
-    if($("c-auto").checked && reply) speak(reply, S.lang);
+    if($("c-auto").checked && reply) speak(reply, both() ? "vi" : S.lang);
   }catch(e){
     wait.remove();
     AI.turns.pop();
@@ -760,8 +918,9 @@ function setLang(l){
   save(); closeTest();
   $("lang-vi").setAttribute("aria-pressed", String(l==="vi"));
   $("lang-en").setAttribute("aria-pressed", String(l==="en"));
+  $("lang-both").setAttribute("aria-pressed", String(l==="both"));
   renderDrill();
-  $("c-in").lang = l;
+  $("c-in").lang = l==="en" ? "en" : "vi";
   $("c-log").replaceChildren(el("p",{class:"empty",id:"c-empty"}, "언어를 바꿨습니다. ", el("b",{},"새 대화 시작"), "을 눌러 주세요."));
   AI.turns = []; renderSugg([]);
 }
@@ -773,10 +932,12 @@ function setTab(t){
 }
 $("lang-vi").onclick = ()=>setLang("vi");
 $("lang-en").onclick = ()=>setLang("en");
+$("lang-both").onclick = ()=>setLang("both");
 $("tab-drill").onclick = ()=>setTab("drill");
 $("tab-chat").onclick = ()=>setTab("chat");
-$("b-play").onclick = ()=>speak(textOf(cur()), S.lang, 1);
-$("b-slow").onclick = ()=>speak(textOf(cur()), S.lang, .6);
+const playCur = rate => both() ? speakSeq([[cur()[1],"vi"],[cur()[3],"en"]], rate) : speak(textOf(cur()), S.lang, rate);
+$("b-play").onclick = ()=>playCur(1);
+$("b-slow").onclick = ()=>playCur(.6);
 $("b-prev").onclick = ()=>move(-1);
 $("b-next").onclick = ()=>move(1);
 $("b-test").onclick = startTest;
