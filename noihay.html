@@ -110,6 +110,10 @@ button{cursor:pointer}
 .say label{font-size:13px;color:var(--muted)}
 .say .in{display:flex;gap:8px}
 .say input{flex:1;min-width:0;border:1px solid var(--line);background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:17px}
+.wd.near{background:var(--tone-soft);color:var(--tone)}
+.btn.rec{background:var(--miss-soft);border-color:var(--miss);color:var(--miss)}
+.heard{font-size:14px;color:var(--muted);margin:0}
+.heard b{color:var(--ink);font-weight:500}
 .tip{font-size:12.5px;color:var(--muted);margin:0}
 kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
 
@@ -280,6 +284,12 @@ html[data-size="xl"] .log{max-height:40vh}
             <button class="btn" id="b-prev" aria-label="이전 표현">‹ 이전</button>
             <button class="btn" id="b-next" aria-label="다음 표현">다음 ›</button>
           </div>
+          <div class="row">
+            <button class="btn" id="b-mic" type="button">🎤 발음 확인</button>
+            <button class="btn" id="b-mic-en" type="button" hidden>🎤 영어 발음 확인</button>
+          </div>
+          <p class="tip" id="d-mic-tip" hidden>이 브라우저는 발음 확인(음성 인식)을 지원하지 않아요. 크롬·엣지·사파리에서 열어 주세요.</p>
+          <div class="result" id="d-result" hidden></div>
         </article>
 
         <aside class="tones" id="tones">
@@ -536,6 +546,96 @@ function renderVoice(){
   $("d-voice").textContent = !TTS.ok ? "음성 재생 불가" : v ? "음성 · " + v.name.replace(/^Microsoft\s+/,"").replace(/\s*-.*$/,"") : (TTS.voices.length ? (S.lang==="vi"?"베트남어 음성 없음":"영어 음성 없음") : "");
 }
 
+
+/* ---------- pronunciation check (음성 인식으로 따라 말하기 → 단어별 비교) ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const NUMW = {
+  vi:{"0":"không","1":"một","2":"hai","3":"ba","4":"bốn","5":"năm","6":"sáu","7":"bảy","8":"tám","9":"chín","10":"mười"},
+  en:{"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine","10":"ten"}
+};
+const baseOf = w => w.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d");
+const normTokens = (text, lang) => tokens(text).map(w=>w.replace(/'/g,"")).filter(Boolean).map(w=>NUMW[lang][w]||w);
+function editDist(a,b){
+  const d = Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);
+  for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+    d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+/* 정답 단어마다 ok(일치) / near(거의 맞음: 베트남어는 성조·모음만 다름, 영어는 한 글자 차이) / miss(안 들림) */
+function grade(target, heard, lang){
+  const T = normTokens(target,lang), H = normTokens(heard,lang), n = T.length, m = H.length;
+  const dp = Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++)
+    dp[i][j] = T[i-1]===H[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  const st = Array(n).fill("miss"), used = new Set(); let i=n, j=m;
+  while(i>0 && j>0){
+    if(T[i-1]===H[j-1]){ st[i-1]="ok"; used.add(j-1); i--; j--; }
+    else if(dp[i-1][j]>=dp[i][j-1]) i--; else j--;
+  }
+  const said = Array(n).fill("");
+  T.forEach((w,k)=>{
+    if(st[k]==="ok") return;
+    const jj = H.findIndex((h,x)=>!used.has(x) && (lang==="vi" ? baseOf(h)===baseOf(w) : (w.length>3 && editDist(h,w)<=1)));
+    if(jj>=0){ st[k]="near"; said[k]=H[jj]; used.add(jj); }
+  });
+  const ok = st.filter(x=>x==="ok").length, near = st.filter(x=>x==="near").length;
+  return {T, disp: tokens(target).filter(w=>w.replace(/'/g,"")), st, said, score: n ? Math.round((ok+near*.5)/n*100) : 0};
+}
+let rec = null, recLang = "";
+function paintMic(){
+  [["b-mic", both()?"vi":S.lang, both()?"🎤 베트남어 발음 확인":"🎤 발음 확인"], ["b-mic-en","en","🎤 영어 발음 확인"]].forEach(([id,l,label])=>{
+    const b = $(id), on = !!rec && recLang===l;
+    b.textContent = on ? "■ 듣는 중… (누르면 중지)" : label; b.classList.toggle("rec", on);
+  });
+  $("b-mic").hidden = !SR; $("b-mic-en").hidden = !SR || !both(); $("d-mic-tip").hidden = !!SR;
+}
+function stopRec(){ const r = rec; rec = null; try{ r && r.abort(); }catch(e){} paintMic(); }
+function resMsg(text){ const r=$("d-result"); r.hidden=false; r.replaceChildren(el("p",{class:"note"}, text)); }
+function showResult(target, heard, g, lang){
+  const msg = g.score>=90 ? "아주 좋아요!" : g.score>=70 ? "좋아요. 노란색·빨간색 단어만 다시 해 보세요." : "다시 한 번 천천히 말해 보세요.";
+  const tips = [];
+  g.T.forEach((w,k)=>{
+    if(g.st[k]==="near") tips.push("“"+g.disp[k]+"” → “"+g.said[k]+"”로 들렸어요"+(lang==="vi"?" (성조·모음 확인)":" (소리를 또렷하게)"));
+    else if(g.st[k]==="miss") tips.push("“"+g.disp[k]+"” 가 안 들렸어요");
+  });
+  $("d-result").hidden = false;
+  $("d-result").replaceChildren(
+    el("div",{class:"score"}, el("span",{class:"num", style:"color:var(--"+(g.score>=70?"ok":"miss")+")"}, String(g.score)), el("span",{class:"msg"}, msg), el("span",{class:"ex"}, LANGLABEL[lang])),
+    el("div",{class:"words"}, ...g.T.map((w,k)=>el("span",{class:"wd "+g.st[k]}, g.disp[k]||w))),
+    el("div",{class:"legend"}, el("span",{}, el("i",{style:"background:var(--ok-soft)"}), "맞음"), el("span",{}, el("i",{style:"background:var(--tone-soft)"}), "거의 맞음"), el("span",{}, el("i",{style:"background:var(--miss-soft)"}), "안 들림")),
+    el("p",{class:"heard"}, "인식된 말: ", el("b",{}, heard || "—")),
+    tips.length ? el("p",{class:"coach"}, tips.join("\n")) : null);
+}
+function checkPron(lang){
+  if(!SR) return;
+  if(rec){ const same = recLang===lang; stopRec(); if(same) return; }
+  if(TTS.ok){ clearTimeout(ttsTimer); speechSynthesis.cancel(); }
+  const target = lang==="vi" ? cur()[1] : cur()[3];
+  const r = new SR(); let got = false;
+  r.lang = lang==="vi" ? "vi-VN" : "en-US"; r.interimResults = false; r.maxAlternatives = 3; r.continuous = false;
+  r.onresult = e => {
+    got = true;
+    const alts = [...e.results[0]].map(a=>a.transcript);
+    let best = null;
+    alts.forEach(a=>{ const g = grade(target, a, lang); if(!best || g.score>best.g.score) best = {a, g}; });
+    showResult(target, best.a, best.g, lang);
+  };
+  r.onerror = e => {
+    got = true;
+    resMsg(e.error==="not-allowed"||e.error==="service-not-allowed" ? "마이크 사용이 막혀 있어요. 주소창 옆 자물쇠에서 마이크를 허용해 주세요. (claude.ai 안에서는 막힐 수 있으니 깃허브 페이지 주소로 열어 보세요.)"
+      : e.error==="no-speech" ? "말소리가 안 들렸어요. 마이크에 가까이 대고 다시 눌러 주세요."
+      : e.error==="audio-capture" ? "마이크를 찾지 못했어요."
+      : e.error==="aborted" ? "" : "인식에 실패했어요 ("+e.error+"). 다시 시도해 주세요.");
+    if(e.error==="aborted") $("d-result").hidden = true;
+  };
+  r.onend = () => { if(rec===r){ rec = null; paintMic(); if(!got) resMsg("말소리가 안 들렸어요. 다시 눌러 주세요."); } };
+  rec = r; recLang = lang; paintMic();
+  try{ r.start(); }catch(e){ rec = null; paintMic(); resMsg("마이크를 시작하지 못했어요. 다시 눌러 주세요."); }
+}
+$("b-mic").onclick = ()=>checkPron(both() ? "vi" : S.lang);
+$("b-mic-en").onclick = ()=>checkPron("en");
+
 /* ---------- drill render ---------- */
 function renderScenes(){
   const box = $("scenes"); box.replaceChildren();
@@ -569,6 +669,7 @@ function renderList(){
   });
 }
 function renderCard(){
+  stopRec(); $("d-result").hidden = true;
   const it = cur(), sc = SCENES[S.scene], vi = S.lang!=="en";
   $("drill").classList.toggle("lang-en", !vi);
   $("d-pos").textContent = sc.ko + " · " + (S.idx+1) + " / " + sc.items.length;
