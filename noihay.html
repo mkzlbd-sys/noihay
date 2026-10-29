@@ -59,7 +59,15 @@ button{cursor:pointer}
 
 
 .grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:780px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .grid>div{order:-1}
+  .brand{flex-direction:column;gap:2px}
+  .brand h1{white-space:nowrap}
+  .drill{padding:16px}
+  .drill .row>.btn{flex:1 1 calc(50% - 8px);justify-content:center;min-height:44px}
+  .chip,.seg button{min-height:40px}
+}
 
 /* phrase list */
 .list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
@@ -238,7 +246,7 @@ html[data-size="xl"] .log{max-height:40vh}
   <header class="top">
     <div class="brand">
       <h1>Nói <span>Hay</span></h1>
-      <small>베트남어 · 영어 생활 회화 (함께 공부 가능)</small>
+      <small class="brand-sub">베트남어 · 영어 생활 회화 (함께 공부 가능)</small>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="학습 언어">
@@ -249,6 +257,10 @@ html[data-size="xl"] .log{max-height:40vh}
       <div class="seg" role="group" aria-label="모드">
         <button id="tab-drill" data-tab="drill" aria-pressed="true">표현 연습</button>
         <button id="tab-chat" data-tab="chat" aria-pressed="false">AI 회화</button>
+      </div>
+      <div class="seg" role="group" aria-label="화면 언어 / Ngôn ngữ giao diện">
+        <button id="ui-ko" data-ui="ko" aria-pressed="true">한국어</button>
+        <button id="ui-vi" data-ui="vi" aria-pressed="false">Tiếng Việt</button>
       </div>
       <div class="seg size" role="group" aria-label="글자 크기">
         <button id="size-m" data-size="m" aria-pressed="false" aria-label="글자 보통">가</button>
@@ -663,7 +675,7 @@ function flash(msg){ const f=$("stage-flash"); f.textContent=msg; f.hidden=false
 function renderList(){
   const box = $("list"); box.replaceChildren();
   SCENES[S.scene].items.forEach((it,i)=>{
-    box.append(el("button",{class:"item","aria-current":String(i===S.idx), onclick:()=>{S.idx=i;save();renderDrill();}},
+    box.append(el("button",{class:"item","aria-current":String(i===S.idx), onclick:()=>{S.idx=i;save();renderDrill();if(matchMedia("(max-width:780px)").matches)document.getElementById("drill").scrollIntoView({behavior:"smooth",block:"start"});}},
       el("span",{class:"dot"+(i===S.idx?" done":"")}),
       el("span",{}, el("span",{class:"t"}, textOf(it)), both() ? el("span",{class:"t2"+(S.hide?" veil":"")}, S.hide ? "• • •" : it[3]) : el("br"), el("span",{class:"k"}, it[0]))));
   });
@@ -955,4 +967,37 @@ $("c-form").addEventListener("submit", e=>{
   s.append(el("option",{value:"-1"}, "자유 대화"));
 })();
 setLang(S.lang);
+
+/* 화면 언어(한국어/Tiếng Việt): 고정된 버튼·제목만 바꿈. 안내문·시험 결과 등은 한국어 */
+(function(){
+  const UI = [
+    ["small.brand-sub","베트남어 · 영어 생활 회화 (함께 공부 가능)","Giao tiếp hằng ngày tiếng Việt · tiếng Anh (học cùng lúc)"],
+    ["#tab-drill","표현 연습","Luyện mẫu câu"],
+    ["#tab-chat","AI 회화","Hội thoại AI"],
+    ["#d-gloss h3","단어 풀이 · 누르면 발음","Giải nghĩa từ · bấm để nghe"],
+    ["#b-slow","천천히","Chậm"],
+    ["#b-play","듣기","Nghe"],
+    ["#b-prev","‹ 이전","‹ Trước"],
+    ["#tones h2","여섯 성조 (북부 표준)","Sáu thanh điệu (giọng miền Bắc)"],
+    ["#tones p","같은 'ma'도 음높이에 따라 뜻이 달라집니다. 칸을 누르면 들어볼 수 있어요.","Cùng một âm 'ma' nhưng cao độ khác nhau thì nghĩa khác nhau. Bấm vào ô để nghe."],
+    ["#c-start","새 대화 시작","Bắt đầu hội thoại mới"],
+    ["#c-send","보내기","Gửi"],
+    ["#c-stop","중지","Dừng"]
+  ];
+  const textNode = e => { let n=null; e.childNodes.forEach(c=>{ if(c.nodeType===3 && c.nodeValue.trim()) n=c; }); return n; };
+  function paintUi(l){
+    UI.forEach(([sel,ko,vi])=>{
+      const e=document.querySelector(sel); if(!e) return;
+      const n=textNode(e); if(n) n.nodeValue = (n.nodeValue.match(/^\s*/)[0]) + (l==="vi"?vi:ko);
+    });
+    $("ui-ko").setAttribute("aria-pressed", String(l==="ko"));
+    $("ui-vi").setAttribute("aria-pressed", String(l==="vi"));
+    document.documentElement.lang = l==="vi" ? "vi" : "ko";
+    try{ localStorage.setItem("noihay-ui", l); }catch(e){}
+  }
+  $("ui-ko").onclick = ()=>paintUi("ko");
+  $("ui-vi").onclick = ()=>paintUi("vi");
+  let saved="ko"; try{ saved = localStorage.getItem("noihay-ui")||"ko"; }catch(e){}
+  if(saved==="vi") paintUi("vi");
+})();
 </script>
